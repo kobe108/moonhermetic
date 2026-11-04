@@ -12,19 +12,24 @@ permissions:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Install MoonBit
-        shell: bash
+      - name: Set up MoonBit
+        uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update dependency index
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          moon version --all
+          moon update
 
       - name: Check
         run: moon check
@@ -33,13 +38,13 @@ jobs:
         run: moon test
 
       - name: Hermeticity audit
-        shell: bash
+        shell: pwsh
         run: |
-          moon run cmd/main -- . --exclude examples --format sarif --fail-on error > moonhermetic.sarif
+          moon run cmd/main -- . --exclude examples --format sarif --fail-on error | Out-File -Encoding utf8 moonhermetic.sarif
 
       - name: Upload SARIF
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: moonhermetic-${{ matrix.os }}
           path: moonhermetic.sarif
