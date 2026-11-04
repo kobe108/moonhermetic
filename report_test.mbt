@@ -50,6 +50,18 @@ test "markdown report escapes table separators" {
 }
 
 ///|
+test "markdown report escapes backticks and backslashes" {
+  let finding : @moonhermetic.Finding = {
+    ..sample_finding(@moonhermetic.Environment),
+    evidence: "value=`ci\\\\token`",
+  }
+  let markdown = @moonhermetic.render_markdown(
+    @moonhermetic.make_report(1, [finding]),
+  )
+  assert_true(markdown.contains("value=\\`ci\\\\\\\\token\\`"))
+}
+
+///|
 test "sarif report contains rule and source location" {
   let sarif = @moonhermetic.render_sarif(
     @moonhermetic.make_report(1, [sample_finding(@moonhermetic.Process)]),

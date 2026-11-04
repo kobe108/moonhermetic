@@ -38,6 +38,7 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 - `hermetic:ignore` 与 `hermetic:ignore-next` 局部豁免。
 - Text、JSON、Markdown、SARIF 2.1.0 输出。
 - 可配置 CI 失败阈值。
+- 通过 `.moonhermetic.json` 按规则关闭、调整严重级别并设置排除路径。
 - 单元测试和安全/风险示例。
 
 ## 一个月迭代计划

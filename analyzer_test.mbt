@@ -64,3 +64,58 @@ test "does not report function declarations" {
   assert_eq(findings.length(), 1)
   assert_eq(findings[0].line, 3)
 }
+
+///|
+test "scans an inline function body without reporting its declaration" {
+  let source =
+    #|fn helper() { sleep(1) }
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 1)
+  assert_true(findings[0].rule == @moonhermetic.Sleep)
+  assert_eq(findings[0].column, 15)
+}
+
+///|
+test "does not confuse parameter literals with the function body" {
+  let source =
+    #|fn helper(options = { "retry": 1 }) { sleep(1) }
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 1)
+  assert_true(findings[0].rule == @moonhermetic.Sleep)
+}
+
+///|
+test "applies per-rule severity and disable overrides" {
+  let source =
+    #|test "configured" {
+    #|  let now = @env.now()
+    #|  let response = fetch("https://example.test")
+    #|  random_byte()
+    #|}
+  let options : @moonhermetic.ScanOptions = {
+    overrides: [
+      { rule: @moonhermetic.Network, severity: None, },
+      { rule: @moonhermetic.Clock, severity: Some(@moonhermetic.Warning), },
+      { rule: @moonhermetic.Random, severity: Some(@moonhermetic.Error), },
+    ],
+  }
+  let findings = @moonhermetic.scan_source_with_options(
+    "demo_test.mbt", source, options,
+  )
+  assert_eq(findings.length(), 2)
+  assert_true(findings[0].rule == @moonhermetic.Clock)
+  assert_true(findings[0].severity == @moonhermetic.Warning)
+  assert_true(findings[1].rule == @moonhermetic.Random)
+  assert_true(findings[1].severity == @moonhermetic.Error)
+}
+
+///|
+test "parses every public rule ID and rejects unknown IDs" {
+  for rule in @moonhermetic.rule_catalog() {
+    guard @moonhermetic.RuleKind::from_code(rule.code()) is Some(parsed) else {
+      fail("known rule ID did not parse")
+    }
+    assert_true(parsed == rule)
+  }
+  assert_true(@moonhermetic.RuleKind::from_code("herm-http") is None)
+}

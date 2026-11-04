@@ -29,6 +29,8 @@ location and a concrete remediation before the test is executed.
   locations.
 - Inline suppression with `// hermetic:ignore` and
   `// hermetic:ignore-next`.
+- Project configuration for rule disabling, severity overrides, exclusions, and
+  the default CI failure threshold.
 - Text, JSON, Markdown, and SARIF 2.1.0 output.
 - CI-friendly exit codes and deterministic file traversal.
 - No opinionated test-replacement framework: it points to the boundary that
@@ -63,6 +65,8 @@ moonhermetic [options] [file-or-directory ...]
 
   -f, --format <text|json|markdown|sarif>
       --fail-on <never|warning|error>
+      --config <path>
+      --no-config
       --exclude <text>
       --rules
   -h, --help
@@ -72,6 +76,33 @@ moonhermetic [options] [file-or-directory ...]
 Without a path, MoonHermetic scans the current directory. It only selects
 files ending in `_test.mbt` or `_wbtest.mbt`, and skips `_build`, `.git`,
 `.mooncakes`, `.moonagent`, `target`, and `node_modules`.
+
+## Configuration
+
+MoonHermetic reads `.moonhermetic.json` from the current working directory when
+it exists. Use `--config <path>` to select another file or `--no-config` to
+disable discovery entirely.
+
+```json
+{
+  "version": 1,
+  "failOn": "error",
+  "exclude": ["vendor"],
+  "rules": {
+    "HERM-NET": "warning",
+    "HERM-FS": "off",
+    "HERM-SLEEP": "error"
+  }
+}
+```
+
+Each rule accepts `off`, `warning`, or `error`. CLI `--fail-on` and
+`--exclude` values override or extend the corresponding config values for one
+run. Unknown rule IDs and misspelled top-level keys are rejected so a broken
+policy cannot silently pass CI.
+
+A complete example is available at
+[`examples/moonhermetic.example.json`](examples/moonhermetic.example.json).
 
 ## Rules
 
@@ -102,7 +133,8 @@ Or suppress every finding on the following line:
 let locale = @env.get_env_var("LANG")
 ```
 
-Suppression is deliberately local. There is no project-wide silent bypass.
+Inline suppression is deliberately local. Rule disabling is explicit in the
+versioned config file, so policy changes remain reviewable.
 
 ## GitHub Actions
 
@@ -135,7 +167,7 @@ println(@moonhermetic.render_markdown(report))
 
 ## Roadmap
 
-- Add opt-in rule configuration in `.moonhermetic.json`.
+- Add rule-specific inline suppression with owners and expiration.
 - Track suppressions and reject expired exceptions.
 - Add diff-aware mode for pull requests.
 - Add precision fixtures from real MoonBit projects.

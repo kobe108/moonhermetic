@@ -129,21 +129,46 @@ fn is_ignored(raw_line : String, previous_line : String) -> Bool {
 }
 
 ///|
-fn is_function_declaration(code_line : String) -> Bool {
+fn mask_declaration_name(code_line : String) -> String {
   let trimmed = code_line.trim_start()
-  trimmed.has_prefix("fn ") ||
-  trimmed.has_prefix("async fn ") ||
-  trimmed.has_prefix("pub fn ") ||
-  trimmed.has_prefix("extern fn ")
+  let declaration = trimmed.has_prefix("fn ") ||
+    trimmed.has_prefix("async fn ") ||
+    trimmed.has_prefix("pub fn ") ||
+    trimmed.has_prefix("pub async fn ") ||
+    trimmed.has_prefix("extern fn ")
+  if declaration {
+    match code_line.find("(") {
+      Some(index) => {
+        let chars = code_line.to_array()
+        for i = 0; i < index; i = i + 1 {
+          chars[i] = ' '
+        }
+        String::from_array(chars)
+      }
+      None => code_line
+    }
+  } else {
+    code_line
+  }
 }
 
 ///|
-/// Scan one MoonBit source file. Paths are only used in the report.
+/// Scan one MoonBit source file with the default rule policy.
+pub fn scan_source(path : String, source : String) -> Array[Finding] {
+  scan_source_with_options(path, source, default_scan_options())
+}
+
+///|
+/// Scan one MoonBit source file with explicit rule overrides.
 ///
 /// A finding can be suppressed on its line with `// hermetic:ignore`. The
 /// directive `// hermetic:ignore-next` suppresses every finding on the next
 /// line.
-pub fn scan_source(path : String, source : String) -> Array[Finding] {
+pub fn scan_source_with_options(
+  path : String,
+  source : String,
+  options : ScanOptions,
+) -> Array[Finding] {
   let masked = mask_source(source)
   let raw_lines = source.split("\n").to_array()
   let code_lines = masked.split("\n").to_array()
@@ -158,16 +183,16 @@ pub fn scan_source(path : String, source : String) -> Array[Finding] {
       raw_lines[line_index - 1].to_owned()
     }
     if !is_ignored(raw_line, previous_line) {
-      let code_line = code_lines[line_index].to_owned()
-      if !is_function_declaration(code_line) {
-        for rule in rule_catalog() {
-          if first_pattern(code_line, rule) is Some((_, column)) {
+      let code_line = mask_declaration_name(code_lines[line_index].to_owned())
+      for rule in rule_catalog() {
+        if first_pattern(code_line, rule) is Some((_, column)) {
+          if resolve_severity(rule, options) is Some(severity) {
             findings.push({
               path,
               line: line_index + 1,
               column: column + 1,
               rule,
-              severity: default_severity(rule),
+              severity,
               evidence: raw_line.trim().to_owned(),
             })
           }

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "failOn": "error",
+  "exclude": [
+    "vendor"
+  ],
+  "rules": {
+    "HERM-NET": "warning",
+    "HERM-FS": "off",
+    "HERM-SLEEP": "warning"
+  }
+}

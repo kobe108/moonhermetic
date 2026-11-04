@@ -4,6 +4,8 @@ package "kobe108/moonhermetic"
 // Values
 pub fn count_by_severity(ScanReport, Severity) -> Int
 
+pub fn default_scan_options() -> ScanOptions
+
 pub fn default_severity(RuleKind) -> Severity
 
 pub fn make_report(Int, Array[Finding]) -> ScanReport
@@ -16,11 +18,15 @@ pub fn render_sarif(ScanReport) -> String
 
 pub fn render_text(ScanReport) -> String
 
+pub fn resolve_severity(RuleKind, ScanOptions) -> Severity?
+
 pub fn rule_catalog() -> Array[RuleKind]
 
 pub fn rule_catalog_markdown() -> String
 
 pub fn scan_source(String, String) -> Array[Finding]
+
+pub fn scan_source_with_options(String, String, ScanOptions) -> Array[Finding]
 
 pub fn should_fail(ScanReport, Severity) -> Bool
 
@@ -48,11 +54,21 @@ pub(all) enum RuleKind {
 }
 pub fn RuleKind::code(Self) -> String
 pub fn RuleKind::equal(Self, Self) -> Bool
+pub fn RuleKind::from_code(String) -> Self?
 pub fn RuleKind::message(Self) -> String
 pub fn RuleKind::not_equal(Self, Self) -> Bool
 pub fn RuleKind::remediation(Self) -> String
 pub fn RuleKind::title(Self) -> String
 pub impl Eq for RuleKind
+
+pub(all) struct RuleOverride {
+  rule : RuleKind
+  severity : Severity?
+}
+
+pub(all) struct ScanOptions {
+  overrides : Array[RuleOverride]
+}
 
 pub(all) struct ScanReport {
   scanned_files : Int

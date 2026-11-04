@@ -64,6 +64,19 @@ pub(all) struct ScanReport {
 }
 
 ///|
+/// Per-rule policy. `None` disables the rule; `Some` overrides its severity.
+pub(all) struct RuleOverride {
+  rule : RuleKind
+  severity : Severity?
+}
+
+///|
+/// Options applied while scanning source.
+pub(all) struct ScanOptions {
+  overrides : Array[RuleOverride]
+}
+
+///|
 pub fn Severity::to_string(self : Severity) -> String {
   match self {
     Warning => "warning"
@@ -81,6 +94,21 @@ pub fn RuleKind::code(self : RuleKind) -> String {
     Process => "HERM-PROC"
     Filesystem => "HERM-FS"
     Sleep => "HERM-SLEEP"
+  }
+}
+
+///|
+/// Parse a stable rule ID. Matching is ASCII case-insensitive.
+pub fn RuleKind::from_code(value : String) -> RuleKind? {
+  match value.trim().to_upper() {
+    "HERM-CLOCK" => Some(Clock)
+    "HERM-RAND" => Some(Random)
+    "HERM-ENV" => Some(Environment)
+    "HERM-NET" => Some(Network)
+    "HERM-PROC" => Some(Process)
+    "HERM-FS" => Some(Filesystem)
+    "HERM-SLEEP" => Some(Sleep)
+    _ => None
   }
 }
 
@@ -141,6 +169,22 @@ pub fn default_severity(rule : RuleKind) -> Severity {
     Clock | Random | Environment | Process | Filesystem => Warning
     Network | Sleep => Error
   }
+}
+
+///|
+pub fn default_scan_options() -> ScanOptions {
+  { overrides: [], }
+}
+
+///|
+/// Resolve the effective severity for a rule after applying overrides.
+pub fn resolve_severity(rule : RuleKind, options : ScanOptions) -> Severity? {
+  for policy in options.overrides {
+    if policy.rule == rule {
+      return policy.severity
+    }
+  }
+  Some(default_severity(rule))
 }
 
 ///|

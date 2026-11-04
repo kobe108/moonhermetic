@@ -10,6 +10,8 @@ let usage_text =
   #|                                      Output format (default: text)
   #|      --fail-on <never|warning|error>
   #|                                      Exit non-zero at this severity (default: error)
+  #|      --config <path>                Read project config (default: .moonhermetic.json)
+  #|      --no-config                     Disable config discovery
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
   #|  -h, --help                          Show this help
@@ -85,12 +87,22 @@ fn discover(
   path : String,
   files : Array[String],
   excludes : Array[String],
+  seen_directories : Array[String],
+  depth : Int,
 ) -> Unit {
+  if depth > 64 {
+    return
+  }
   if is_user_excluded(path, excludes) {
     return
   }
   match inspect_kind(path) {
     1 => {
+      let directory_key = @path.Path(path).resolve().to_string()
+      if seen_directories.contains(directory_key) {
+        return
+      }
+      seen_directories.push(directory_key)
       let entries = @fs.read_dir(path) catch {
         @fs.IOError(message) => {
           print_error("cannot read directory '\{path}': \{message}")
@@ -101,7 +113,7 @@ fn discover(
       for entry in entries {
         if !is_builtin_excluded(entry) {
           let child = @path.Path(path).join(@path.Path(entry)).to_string()
-          discover(child, files, excludes)
+          discover(child, files, excludes, seen_directories, depth + 1)
         }
       }
     }
@@ -114,28 +126,66 @@ fn discover(
 }
 
 ///|
-fn main {
-  let args = @env.args()
-  let inputs = []
-  let excludes = []
-  let mut format = "text"
-  let mut fail_on = "error"
-  let mut index = 1
-  while index < args.length() {
-    let arg = args[index]
+fn handle_info_args(args : Array[String]) -> Unit {
+  for arg in args[1:] {
     match arg {
       "-h" | "--help" => {
         println(usage_text)
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.1.0")
+        println("moonhermetic 0.2.0")
         @sys.exit(0)
       }
       "--rules" => {
         println(@lib.rule_catalog_markdown())
         @sys.exit(0)
       }
+      _ => ()
+    }
+  }
+}
+
+///|
+fn main {
+  let args = @env.args()
+  handle_info_args(args)
+  let mut config_path : String? = None
+  let mut config_disabled = false
+  let mut config_index = 1
+  while config_index < args.length() {
+    match args[config_index] {
+      "--config" => {
+        config_path = Some(require_value(args, config_index, "--config"))
+        config_index = config_index + 1
+      }
+      "--no-config" => config_disabled = true
+      _ => ()
+    }
+    config_index = config_index + 1
+  }
+  if config_disabled && config_path is Some(_) {
+    print_error("--config cannot be combined with --no-config")
+    @sys.exit(2)
+  }
+  let config = load_project_config(config_path, config_disabled) catch {
+    ConfigError(message) => {
+      print_error(message)
+      @sys.exit(2)
+      abort("unreachable after invalid config")
+    }
+  }
+  let inputs = []
+  let excludes = config.excludes
+  let mut format = "text"
+  let mut fail_on = match config.fail_on {
+    Some(value) => value
+    None => "error"
+  }
+  let mut index = 1
+  while index < args.length() {
+    let arg = args[index]
+    match arg {
       "-f" | "--format" => {
         let value = require_value(args, index, arg)
         match value {
@@ -162,6 +212,8 @@ fn main {
         }
         index = index + 1
       }
+      "--config" => index = index + 1
+      "--no-config" => ()
       "--exclude" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -187,8 +239,9 @@ fn main {
   }
 
   let files = []
+  let seen_directories = []
   for input in inputs {
-    discover(input, files, excludes)
+    discover(input, files, excludes, seen_directories, 0)
   }
   files.sort()
 
@@ -201,7 +254,7 @@ fn main {
         abort("unreachable after I/O error")
       }
     }
-    for finding in @lib.scan_source(file, source) {
+    for finding in @lib.scan_source_with_options(file, source, config.options) {
       findings.push(finding)
     }
   }

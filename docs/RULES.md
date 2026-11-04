@@ -5,6 +5,10 @@ dependency", not "this test is wrong". A test can be intentionally
 non-hermetic if the dependency is owned by a fixture and the exception is
 documented.
 
+Default severities can be changed in `.moonhermetic.json`. Setting a rule to
+`off` removes its findings entirely; changing it to `warning` or `error`
+changes only the reported severity.
+
 ## HERM-CLOCK
 
 Matches current wall-clock or local-time reads. A fixed timestamp lets the test

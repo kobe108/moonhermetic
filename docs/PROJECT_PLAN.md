@@ -40,7 +40,7 @@ history-based flake score.
 - [x] CI exit thresholds.
 - [x] Recursive `_test.mbt` and `_wbtest.mbt` discovery.
 - [x] Example vulnerable and safe files.
-- [ ] Add a configurable rule allowlist.
+- [x] Add configurable rule severity and project exclusions.
 
 ### Week 3: ecosystem validation
 
