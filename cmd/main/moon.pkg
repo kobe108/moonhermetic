@@ -5,6 +5,7 @@ import {
   "moonbitlang/x/fs",
   "moonbitlang/x/path",
   "moonbitlang/x/sys",
+  "moonbitlang/x/time",
 }
 
 pkgtype(kind: "executable")

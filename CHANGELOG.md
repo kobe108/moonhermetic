@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- Add rule-specific same-line and next-line suppression.
+- Require owner and UTC expiry date for scoped suppressions.
+- Let expired or malformed suppressions fail open so risks are reported.
+- Expose a date-aware scanner API for deterministic policy evaluation.
+
 ## 0.2.0
 
 - Add `.moonhermetic.json` configuration for rule severity and disabling.

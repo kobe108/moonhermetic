@@ -28,6 +28,8 @@ pub fn scan_source(String, String) -> Array[Finding]
 
 pub fn scan_source_with_options(String, String, ScanOptions) -> Array[Finding]
 
+pub fn scan_source_with_options_and_date(String, String, ScanOptions, String) -> Array[Finding]
+
 pub fn should_fail(ScanReport, Severity) -> Bool
 
 // Errors

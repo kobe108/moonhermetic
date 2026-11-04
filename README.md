@@ -27,7 +27,7 @@ location and a concrete remediation before the test is executed.
   filesystem, and sleep/timing dependencies.
 - Comment- and literal-aware scanning with precise file, line, and column
   locations.
-- Inline suppression with `// hermetic:ignore` and
+- Rule-specific inline suppression with owners, expiry dates, and
   `// hermetic:ignore-next`.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
@@ -120,21 +120,27 @@ Run `moon run cmd/main -- --rules` for the current catalog.
 
 ## Suppression
 
-Suppress a reviewed exception on the same line:
+The legacy blanket directive remains available:
 
 ```moonbit
 sleep(20) // hermetic:ignore: timing service must expire the lease
 ```
 
-Or suppress every finding on the following line:
+For reviewed exceptions, name only the affected rules and attach an owner and
+UTC expiry date:
 
 ```moonbit
-// hermetic:ignore-next: test intentionally reads the host locale
-let locale = @env.get_env_var("LANG")
+fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108 expires=2026-12-31
+sleep(10) // hermetic:ignore HERM-SLEEP,HERM-CLOCK owner=kobe108 expires=2026-12-31
 ```
 
-Inline suppression is deliberately local. Rule disabling is explicit in the
-versioned config file, so policy changes remain reviewable.
+Use `// hermetic:ignore-next` to target the following line instead. A scoped
+directive must include `owner=` and `expires=YYYY-MM-DD`. Once the UTC date is
+past the expiry date, or when the directive is malformed, it stops suppressing
+and the original finding reappears.
+
+Inline suppression stays local. Rule disabling is explicit in the versioned
+config file, so policy changes remain reviewable.
 
 ## GitHub Actions
 
@@ -160,15 +166,18 @@ a packaging smoke test.
 The analyzer is also usable without the CLI:
 
 ```moonbit
-let findings = @moonhermetic.scan_source("billing_test.mbt", source)
+let findings = @moonhermetic.scan_source_with_options_and_date(
+  "billing_test.mbt",
+  source,
+  @moonhermetic.default_scan_options(),
+  "2026-11-05",
+)
 let report = @moonhermetic.make_report(1, findings)
 println(@moonhermetic.render_markdown(report))
 ```
 
 ## Roadmap
 
-- Add rule-specific inline suppression with owners and expiration.
-- Track suppressions and reject expired exceptions.
 - Add diff-aware mode for pull requests.
 - Add precision fixtures from real MoonBit projects.
 - Ship signed native binaries and a reusable GitHub Action.

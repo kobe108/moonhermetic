@@ -57,5 +57,13 @@ sleep(5) // hermetic:ignore: remote fixture guarantees startup after 5ms
 let language = @env.get_env_var("LANG")
 ```
 
-Suppressions must be attached to the code under review. A future release will
-add expiration and owner fields.
+Rule-specific suppressions must be attached to the code under review and
+include an owner and UTC expiry date:
+
+```moonbit
+fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108 expires=2026-12-31 reason=local_fixture
+```
+
+`ignore-next` uses the same syntax. Expiration is inclusive: the directive
+remains active through the ISO date in `expires`. Expired, incomplete, or
+malformed directives fail open, so the original finding is reported.

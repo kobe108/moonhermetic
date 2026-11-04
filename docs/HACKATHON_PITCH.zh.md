@@ -35,7 +35,7 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 - 7 类规则：Clock、Random、Environment、Network、Process、Filesystem、Sleep。
 - 注释、字符串、字符、块注释和快照内容屏蔽，减少假阳性。
 - 文件、行、列和原始证据定位。
-- `hermetic:ignore` 与 `hermetic:ignore-next` 局部豁免。
+- 支持按规则 ID、负责人和过期日期管理的局部豁免。
 - Text、JSON、Markdown、SARIF 2.1.0 输出。
 - 可配置 CI 失败阈值。
 - 通过 `.moonhermetic.json` 按规则关闭、调整严重级别并设置排除路径。

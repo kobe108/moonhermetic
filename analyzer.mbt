@@ -123,9 +123,192 @@ fn first_pattern(code : String, rule : RuleKind) -> (String, Int)? {
 }
 
 ///|
-fn is_ignored(raw_line : String, previous_line : String) -> Bool {
-  raw_line.contains("hermetic:ignore") ||
-  previous_line.contains("hermetic:ignore-next")
+priv enum SuppressionScope {
+  SameLine
+  NextLine
+}
+
+///|
+priv struct Suppression {
+  scope : SuppressionScope
+  rules : Array[RuleKind]
+  owner : String?
+  expires : String?
+}
+
+///|
+fn line_comment(raw_line : String) -> String? {
+  let chars = raw_line.to_array()
+  let mut i = 0
+  let mut quote : Char? = None
+  let mut escaped = false
+  while i + 1 < chars.length() {
+    let current = chars[i]
+    if quote is Some(mark) {
+      if escaped {
+        escaped = false
+      } else if current == '\\' {
+        escaped = true
+      } else if current == mark {
+        quote = None
+      }
+    } else if current == '"' || current == '\'' {
+      quote = Some(current)
+    } else if current == '/' && chars[i + 1] == '/' {
+      return Some(raw_line.view(start_offset=i + 2).to_owned())
+    }
+    i = i + 1
+  }
+  None
+}
+
+///|
+fn date_digit(value : String, index : Int) -> Int? {
+  match value.get_char(index) {
+    Some(c) if c >= '0' && c <= '9' => Some(c.to_int() - '0'.to_int())
+    _ => None
+  }
+}
+
+///|
+fn valid_iso_date(value : String) -> Bool {
+  if value.char_length() != 10 ||
+    value.get_char(4) != Some('-') ||
+    value.get_char(7) != Some('-') {
+    return false
+  }
+  let digits = [0, 1, 2, 3, 5, 6, 8, 9]
+  for index in digits {
+    if date_digit(value, index) is None {
+      return false
+    }
+  }
+  let year = date_digit(value, 0).unwrap() * 1000 +
+    date_digit(value, 1).unwrap() * 100 +
+    date_digit(value, 2).unwrap() * 10 +
+    date_digit(value, 3).unwrap()
+  let month = date_digit(value, 5).unwrap() * 10 + date_digit(value, 6).unwrap()
+  let day = date_digit(value, 8).unwrap() * 10 + date_digit(value, 9).unwrap()
+  if year < 1970 || month < 1 || month > 12 || day < 1 {
+    return false
+  }
+  let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+  let limit = match month {
+    2 => if leap { 29 } else { 28 }
+    4 | 6 | 9 | 11 => 30
+    _ => 31
+  }
+  day <= limit
+}
+
+///|
+fn parse_suppression(raw_line : String) -> Suppression? {
+  let comment = match line_comment(raw_line) {
+    Some(comment) => comment.trim_start()
+    None => return None
+  }
+  let (scope, after_marker) = if comment.strip_prefix("hermetic:ignore-next")
+    is Some(rest) {
+    (NextLine, rest)
+  } else if comment.strip_prefix("hermetic:ignore") is Some(rest) {
+    (SameLine, rest)
+  } else {
+    return None
+  }
+  let mut rest = after_marker.trim_start()
+  if rest.has_prefix(":") {
+    return Some({ scope, rules: [], owner: None, expires: None, })
+  }
+  let rules : Array[RuleKind] = []
+  let mut owner : String? = None
+  let mut expires : String? = None
+  while !rest.is_empty() {
+    let token = match rest.find_by(c => c == ' ' || c == '\t') {
+      Some(index) => {
+        let token = rest.view(end_offset=index).to_owned()
+        rest = rest.view(start_offset=index + 1).trim_start()
+        token
+      }
+      None => {
+        let token = rest.to_owned()
+        rest = ""
+        token
+      }
+    }
+    if token.has_prefix("owner=") {
+      let value = token.view(start_offset=6).trim().to_owned()
+      if value.is_empty() {
+        return None
+      }
+      owner = Some(value)
+    } else if token.has_prefix("expires=") {
+      let value = token.view(start_offset=8).trim().to_owned()
+      if !valid_iso_date(value) {
+        return None
+      }
+      expires = Some(value)
+    } else if token.has_prefix("reason=") {
+      break
+    } else {
+      for rule_id in token.split(",") {
+        let rule_id = rule_id.trim()
+        if rule_id.is_empty() {
+          continue
+        }
+        match RuleKind::from_code(rule_id.to_owned()) {
+          Some(rule) => if !rules.contains(rule) { rules.push(rule) }
+          None => return None
+        }
+      }
+    }
+  }
+  match (rules.is_empty(), owner, expires) {
+    (true, None, None) => Some({ scope, rules, owner: None, expires: None, })
+    (_, Some(owner), Some(expires)) =>
+      Some({ scope, rules, owner: Some(owner), expires: Some(expires), })
+    _ => None
+  }
+}
+
+///|
+fn suppression_applies(
+  suppression : Suppression,
+  rule : RuleKind,
+  today : String?,
+) -> Bool {
+  let rule_matches = suppression.rules.is_empty() ||
+    suppression.rules.contains(rule)
+  if !rule_matches {
+    return false
+  }
+  match (suppression.owner, suppression.expires, today) {
+    (None, None, _) => true
+    (Some(_), Some(expires), Some(today)) =>
+      valid_iso_date(today) && expires >= today
+    _ => false
+  }
+}
+
+///|
+fn is_suppressed(
+  rule : RuleKind,
+  raw_line : String,
+  previous_line : String,
+  today : String?,
+) -> Bool {
+  if parse_suppression(raw_line) is Some(suppression) {
+    if suppression.scope is SameLine &&
+      suppression_applies(suppression, rule, today) {
+      return true
+    }
+  }
+  if parse_suppression(previous_line) is Some(suppression) {
+    if suppression.scope is NextLine &&
+      suppression_applies(suppression, rule, today) {
+      return true
+    }
+  }
+  false
 }
 
 ///|
@@ -161,13 +344,32 @@ pub fn scan_source(path : String, source : String) -> Array[Finding] {
 ///|
 /// Scan one MoonBit source file with explicit rule overrides.
 ///
-/// A finding can be suppressed on its line with `// hermetic:ignore`. The
-/// directive `// hermetic:ignore-next` suppresses every finding on the next
-/// line.
+/// Expiring, scoped suppressions require the date-aware overload.
 pub fn scan_source_with_options(
   path : String,
   source : String,
   options : ScanOptions,
+) -> Array[Finding] {
+  scan_source_internal(path, source, options, None)
+}
+
+///|
+/// Scan with rule overrides and an ISO-8601 UTC date for expiry evaluation.
+pub fn scan_source_with_options_and_date(
+  path : String,
+  source : String,
+  options : ScanOptions,
+  today : String,
+) -> Array[Finding] {
+  scan_source_internal(path, source, options, Some(today))
+}
+
+///|
+fn scan_source_internal(
+  path : String,
+  source : String,
+  options : ScanOptions,
+  today : String?,
 ) -> Array[Finding] {
   let masked = mask_source(source)
   let raw_lines = source.split("\n").to_array()
@@ -182,11 +384,11 @@ pub fn scan_source_with_options(
     } else {
       raw_lines[line_index - 1].to_owned()
     }
-    if !is_ignored(raw_line, previous_line) {
-      let code_line = mask_declaration_name(code_lines[line_index].to_owned())
-      for rule in rule_catalog() {
-        if first_pattern(code_line, rule) is Some((_, column)) {
-          if resolve_severity(rule, options) is Some(severity) {
+    let code_line = mask_declaration_name(code_lines[line_index].to_owned())
+    for rule in rule_catalog() {
+      if first_pattern(code_line, rule) is Some((_, column)) {
+        if resolve_severity(rule, options) is Some(severity) {
+          if !is_suppressed(rule, raw_line, previous_line, today) {
             findings.push({
               path,
               line: line_index + 1,

@@ -41,6 +41,7 @@ history-based flake score.
 - [x] Recursive `_test.mbt` and `_wbtest.mbt` discovery.
 - [x] Example vulnerable and safe files.
 - [x] Add configurable rule severity and project exclusions.
+- [x] Add rule-specific suppressions with owner and expiry metadata.
 
 ### Week 3: ecosystem validation
 

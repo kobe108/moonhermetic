@@ -20,6 +20,7 @@ let usage_text =
   #|Files ending in _test.mbt or _wbtest.mbt are scanned by default.
   #|Suppress a finding with // hermetic:ignore on its line.
   #|Use // hermetic:ignore-next on the preceding line to suppress one line.
+  #|Scoped form: // hermetic:ignore HERM-NET owner=<id> expires=YYYY-MM-DD
   #|
   #|Exit codes:
   #|  0  Scan completed without reaching the fail threshold
@@ -134,7 +135,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.2.0")
+        println("moonhermetic 0.3.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -144,6 +145,22 @@ fn handle_info_args(args : Array[String]) -> Unit {
       _ => ()
     }
   }
+}
+
+///|
+fn two_digits(value : Int) -> String {
+  if value < 10 {
+    "0\{value}"
+  } else {
+    value.to_string()
+  }
+}
+
+///|
+fn current_utc_date() -> String {
+  let seconds = (@env.now() / 1000UL).reinterpret_as_int64()
+  let instant = @time.unix(seconds) catch { _ => return "9999-12-31" }
+  "\{instant.year()}-\{two_digits(instant.month())}-\{two_digits(instant.day())}"
 }
 
 ///|
@@ -246,6 +263,7 @@ fn main {
   files.sort()
 
   let findings = []
+  let scan_date = current_utc_date()
   for file in files {
     let source = @fs.read_file_to_string(file) catch {
       @fs.IOError(message) => {
@@ -254,7 +272,13 @@ fn main {
         abort("unreachable after I/O error")
       }
     }
-    for finding in @lib.scan_source_with_options(file, source, config.options) {
+    for
+      finding in @lib.scan_source_with_options_and_date(
+        file,
+        source,
+        config.options,
+        scan_date,
+      ) {
       findings.push(finding)
     }
   }

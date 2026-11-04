@@ -119,3 +119,71 @@ test "parses every public rule ID and rejects unknown IDs" {
   }
   assert_true(@moonhermetic.RuleKind::from_code("herm-http") is None)
 }
+
+///|
+test "rule-specific suppression hides only named rules" {
+  let source =
+    #|test "scoped" {
+    #|  let response = fetch("https://example.test"); sleep(1) // hermetic:ignore HERM-NET owner=kobe108 expires=2027-01-31 reason=fixture
+    #|}
+  let findings = @moonhermetic.scan_source_with_options_and_date(
+    "demo_test.mbt",
+    source,
+    @moonhermetic.default_scan_options(),
+    "2026-11-05",
+  )
+  assert_eq(findings.length(), 1)
+  assert_true(findings[0].rule == @moonhermetic.Sleep)
+}
+
+///|
+test "expired or incomplete scoped suppressions fail open" {
+  let expired =
+    #|test "expired" {
+    #|  fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108 expires=2026-11-04
+    #|}
+  let expired_findings = @moonhermetic.scan_source_with_options_and_date(
+    "expired_test.mbt",
+    expired,
+    @moonhermetic.default_scan_options(),
+    "2026-11-05",
+  )
+  assert_eq(expired_findings.length(), 1)
+  let incomplete =
+    #|test "incomplete" {
+    #|  fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108
+    #|}
+  let incomplete_findings = @moonhermetic.scan_source_with_options_and_date(
+    "incomplete_test.mbt",
+    incomplete,
+    @moonhermetic.default_scan_options(),
+    "2026-11-05",
+  )
+  assert_eq(incomplete_findings.length(), 1)
+}
+
+///|
+test "scoped next-line suppression supports comma-separated rules" {
+  let source =
+    #|test "next" {
+    #|  // hermetic:ignore-next HERM-NET,HERM-SLEEP owner=kobe108 expires=2026-11-05 reason=fixture
+    #|  let response = fetch("https://example.test"); sleep(1)
+    #|}
+  let findings = @moonhermetic.scan_source_with_options_and_date(
+    "demo_test.mbt",
+    source,
+    @moonhermetic.default_scan_options(),
+    "2026-11-05",
+  )
+  assert_eq(findings.length(), 0)
+}
+
+///|
+test "scoped suppression requires a reference date when using the base API" {
+  let source =
+    #|test "undated" {
+    #|  fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108 expires=2099-01-01
+    #|}
+  let findings = @moonhermetic.scan_source("undated_test.mbt", source)
+  assert_eq(findings.length(), 1)
+}
