@@ -1,0 +1,66 @@
+///|
+test "detects core implicit dependencies" {
+  let source =
+    #|test "risky" {
+    #|  let now = @env.now()
+    #|  let port = @env.get_env_var("PORT")
+    #|  let response = fetch("https://example.com")
+    #|  @fs.write_file("out.txt", "x")
+    #|  sleep(10)
+    #|}
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 5)
+  assert_true(findings[0].rule == @moonhermetic.Clock)
+  assert_true(findings[1].rule == @moonhermetic.Environment)
+  assert_true(findings[2].rule == @moonhermetic.Network)
+  assert_true(findings[3].rule == @moonhermetic.Filesystem)
+  assert_true(findings[4].rule == @moonhermetic.Sleep)
+}
+
+///|
+test "ignores comments literals and snapshot content" {
+  let source =
+    #|test "safe" {
+    #|  // sleep(100) and @env.now() are documentation
+    #|  let message = "fetch( and @fs.read_file"
+    #|  inspect(message, content=(#|@env.get_env_var("TOKEN")
+    #|  ))
+    #|}
+  assert_eq(@moonhermetic.scan_source("demo_test.mbt", source).length(), 0)
+}
+
+///|
+test "supports line and next-line suppression" {
+  let source =
+    #|test "suppressed" {
+    #|  sleep(1) // hermetic:ignore
+    #|  // hermetic:ignore-next
+    #|  @env.get_env_var("CI")
+    #|  random_byte()
+    #|}
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 1)
+  assert_true(findings[0].rule == @moonhermetic.Random)
+  assert_eq(findings[0].line, 5)
+}
+
+///|
+test "reports precise locations" {
+  let findings = @moonhermetic.scan_source("x_test.mbt", "test { sleep(1) }")
+  assert_eq(findings.length(), 1)
+  assert_eq(findings[0].line, 1)
+  assert_eq(findings[0].column, 8)
+  assert_true(findings[0].severity == @moonhermetic.Error)
+}
+
+///|
+test "does not report function declarations" {
+  let source =
+    #|fn fetch(_url : String) -> String { "ok" }
+    #|test "calls helper" {
+    #|  let _ = fetch("https://example.test")
+    #|}
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 1)
+  assert_eq(findings[0].line, 3)
+}

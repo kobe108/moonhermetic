@@ -1,0 +1,73 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "kobe108/moonhermetic"
+
+// Values
+pub fn count_by_severity(ScanReport, Severity) -> Int
+
+pub fn default_severity(RuleKind) -> Severity
+
+pub fn make_report(Int, Array[Finding]) -> ScanReport
+
+pub fn render_json(ScanReport) -> String
+
+pub fn render_markdown(ScanReport) -> String
+
+pub fn render_sarif(ScanReport) -> String
+
+pub fn render_text(ScanReport) -> String
+
+pub fn rule_catalog() -> Array[RuleKind]
+
+pub fn rule_catalog_markdown() -> String
+
+pub fn scan_source(String, String) -> Array[Finding]
+
+pub fn should_fail(ScanReport, Severity) -> Bool
+
+// Errors
+
+// Types and methods
+pub(all) struct Finding {
+  path : String
+  line : Int
+  column : Int
+  rule : RuleKind
+  severity : Severity
+  evidence : String
+}
+pub fn Finding::to_text(Self) -> String
+
+pub(all) enum RuleKind {
+  Clock
+  Random
+  Environment
+  Network
+  Process
+  Filesystem
+  Sleep
+}
+pub fn RuleKind::code(Self) -> String
+pub fn RuleKind::equal(Self, Self) -> Bool
+pub fn RuleKind::message(Self) -> String
+pub fn RuleKind::not_equal(Self, Self) -> Bool
+pub fn RuleKind::remediation(Self) -> String
+pub fn RuleKind::title(Self) -> String
+pub impl Eq for RuleKind
+
+pub(all) struct ScanReport {
+  scanned_files : Int
+  findings : Array[Finding]
+}
+
+pub(all) enum Severity {
+  Warning
+  Error
+}
+pub fn Severity::equal(Self, Self) -> Bool
+pub fn Severity::not_equal(Self, Self) -> Bool
+pub fn Severity::to_string(Self) -> String
+pub impl Eq for Severity
+
+// Type aliases
+
+// Traits
