@@ -32,6 +32,7 @@ location and a concrete remediation before the test is executed.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
+- A pinned ten-repository precision baseline for detecting heuristic drift.
 - Text, JSON, Markdown, and SARIF 2.1.0 output.
 - CI-friendly exit codes and deterministic file traversal.
 - No opinionated test-replacement framework: it points to the boundary that
@@ -211,10 +212,17 @@ moon test
 moon info
 ```
 
+Run the network-backed real-project benchmark with:
+
+```powershell
+pwsh scripts/run-precision.ps1
+```
+
 See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the one-month delivery
 plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
-guidance, and [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the
-Chinese proposal and demo script.
+guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
+[docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
+proposal and demo script.
 
 The repository uses the commit identity `kobe108 <3360944005@qq.com>`.
 When Git is installed, `scripts/init-git.ps1 -RemoteUrl <url>` initializes the

@@ -84,23 +84,30 @@ fn patterns_for(rule : RuleKind) -> Array[String] {
       [
         "@env.now(", "@time.now(", ".now(", "current_time(", "localtime(", "today(",
       ]
-    Random => ["@random.", "@env.rand(", ".random(", "random_", "rand("]
+    Random =>
+      [
+        "@random.", "@env.rand(", ".random(", "rand(", "random_byte(", "random_bytes(",
+        "random_bool(", "random_double(", "random_id(", "random_int(", "random_string(",
+        "random_uint(", "random_uuid(",
+      ]
     Environment =>
       [
         "@env.get_env_var(", "@env.get_env_vars(", "getenv(", "process.env", "env_var(",
       ]
     Network =>
       [
-        "@http.", "http_get(", "http_post(", "fetch(", "@socket.", ".connect(", "listen(",
-        "dns_",
+        "@http.", "@websocket.connect(", "@socket.Tcp::connect(", "@socket.TcpServer(",
+        "@socket.UdpClient(", "@socket.UdpServer(", "@socket.Addr::resolve(", "http_get(",
+        "http_post(", "fetch(", ".connect(", "listen(", "dns_",
       ]
     Process =>
       [
-        "@process.", "@shell.", "Command::new(", "exec(", "spawn(", "run_command(",
+        "@process.run(", "@process.spawn(", "@process.collect_stdout(", "@shell.",
+        "Command::new(", "exec(", "run_command(",
       ]
     Filesystem =>
       [
-        "@fs.", "read_file", "write_file", "read_dir(", "path_exists(", "is_file(",
+        "@fs.", "read_file(", "write_file(", "read_dir(", "path_exists(", "is_file(",
         "is_dir(", "File::open(",
       ]
     Sleep => ["sleep(", "delay(", "wait_until(", "Thread::sleep"]
@@ -113,9 +120,39 @@ pub fn rule_catalog() -> Array[RuleKind] {
 }
 
 ///|
+fn is_identifier_char(value : Char) -> Bool {
+  (value >= 'a' && value <= 'z') ||
+  (value >= 'A' && value <= 'Z') ||
+  (value >= '0' && value <= '9') ||
+  value == '_'
+}
+
+///|
+fn find_bounded_pattern(code : String, pattern : String) -> Int? {
+  if pattern.is_empty() || !is_identifier_char(pattern.get_char(0).unwrap()) {
+    return code.find(pattern)
+  }
+  let mut base = 0
+  let mut remaining = code.view()
+  while remaining.find(pattern) is Some(index) {
+    let absolute = base + index
+    if absolute == 0 ||
+      (
+        code.get_char(absolute - 1) is Some(previous) &&
+        !is_identifier_char(previous)
+      ) {
+      return Some(absolute)
+    }
+    base = absolute + 1
+    remaining = code.view(start_offset=base)
+  }
+  None
+}
+
+///|
 fn first_pattern(code : String, rule : RuleKind) -> (String, Int)? {
   for pattern in patterns_for(rule) {
-    if code.find(pattern) is Some(index) {
+    if find_bounded_pattern(code, pattern) is Some(index) {
       return Some((pattern, index))
     }
   }

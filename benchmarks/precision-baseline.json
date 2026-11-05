@@ -1,0 +1,161 @@
+{
+  "schema": "moonhermetic/precision-baseline-v1",
+  "scannerVersion": "0.5.0",
+  "recordedAt": "2026-11-06",
+  "summary": {
+    "repositories": 10,
+    "testFiles": 531,
+    "findings": 1233,
+    "byRule": {
+      "HERM-CLOCK": 59,
+      "HERM-RAND": 6,
+      "HERM-ENV": 1,
+      "HERM-NET": 162,
+      "HERM-PROC": 129,
+      "HERM-FS": 498,
+      "HERM-SLEEP": 378
+    }
+  },
+  "repositories": [
+    {
+      "id": "moonbitlang-x",
+      "testFiles": 75,
+      "findings": 84,
+      "byRule": {
+        "HERM-CLOCK": 6,
+        "HERM-RAND": 1,
+        "HERM-ENV": 1,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 76,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "moonbitlang-async",
+      "testFiles": 169,
+      "findings": 1106,
+      "byRule": {
+        "HERM-CLOCK": 51,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 151,
+        "HERM-PROC": 129,
+        "HERM-FS": 400,
+        "HERM-SLEEP": 375
+      }
+    },
+    {
+      "id": "serde",
+      "testFiles": 14,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "moondiff",
+      "testFiles": 159,
+      "findings": 16,
+      "byRule": {
+        "HERM-CLOCK": 2,
+        "HERM-RAND": 5,
+        "HERM-ENV": 0,
+        "HERM-NET": 6,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 3
+      }
+    },
+    {
+      "id": "prettyprinter",
+      "testFiles": 3,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "difflib",
+      "testFiles": 7,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "cmark",
+      "testFiles": 52,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "rabbita",
+      "testFiles": 43,
+      "findings": 27,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 5,
+        "HERM-PROC": 0,
+        "HERM-FS": 22,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "quickcheck",
+      "testFiles": 4,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    },
+    {
+      "id": "json",
+      "testFiles": 5,
+      "findings": 0,
+      "byRule": {
+        "HERM-CLOCK": 0,
+        "HERM-RAND": 0,
+        "HERM-ENV": 0,
+        "HERM-NET": 0,
+        "HERM-PROC": 0,
+        "HERM-FS": 0,
+        "HERM-SLEEP": 0
+      }
+    }
+  ]
+}

@@ -85,6 +85,30 @@ test "does not confuse parameter literals with the function body" {
 }
 
 ///|
+test "requires identifier boundaries for generic call patterns" {
+  let source =
+    #|test "boundaries" {
+    #|  client.stop_prefetch()
+    #|  group.spawn(() => ())
+    #|  fetch("https://example.test")
+    #|}
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 1)
+  assert_true(findings[0].rule == @moonhermetic.Network)
+  assert_eq(findings[0].line, 4)
+}
+
+///|
+test "does not treat address parsing or unimplemented probes as effects" {
+  let source =
+    #|test "helpers" {
+    #|  ignore(@socket.Addr::parse("127.0.0.1:80"))
+    #|  ignore(@process.unimplemented)
+    #|}
+  assert_eq(@moonhermetic.scan_source("demo_test.mbt", source).length(), 0)
+}
+
+///|
 test "applies per-rule severity and disable overrides" {
   let source =
     #|test "configured" {

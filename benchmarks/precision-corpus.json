@@ -1,0 +1,55 @@
+{
+  "schema": "moonhermetic/precision-corpus-v1",
+  "repositories": [
+    {
+      "id": "moonbitlang-x",
+      "repository": "moonbitlang/x",
+      "commit": "6b67e08c098c349f1e0fb48b0a624864d7e415e5"
+    },
+    {
+      "id": "moonbitlang-async",
+      "repository": "moonbitlang/async",
+      "commit": "811d73d3d9e0453bd90989b44ac30602d6c415bc"
+    },
+    {
+      "id": "serde",
+      "repository": "moonbit-community/serde.mbt",
+      "commit": "0675e0435c35c1b645e5c110936c47c04e981cfe"
+    },
+    {
+      "id": "moondiff",
+      "repository": "moonbit-community/moondiff",
+      "commit": "9d4329bea8e90d07ba1aefe9a56b6595dd279265"
+    },
+    {
+      "id": "prettyprinter",
+      "repository": "moonbit-community/prettyprinter",
+      "commit": "d122a15e9134635f500ea44c7fbdb1baf2ce8e84"
+    },
+    {
+      "id": "difflib",
+      "repository": "bobzhang/difflib.mbt",
+      "commit": "e7f8539683c6dc6d0a11fa349fb5ad185f7a41d6"
+    },
+    {
+      "id": "cmark",
+      "repository": "moonbit-community/cmark.mbt",
+      "commit": "466b25ccc7e9d39afc67d806fec629986b55a04e"
+    },
+    {
+      "id": "rabbita",
+      "repository": "moonbit-community/rabbita",
+      "commit": "07ec1e26243c04283aaee1d8eb3e14736e24115b"
+    },
+    {
+      "id": "quickcheck",
+      "repository": "moonbitlang/quickcheck",
+      "commit": "d1149a8eceb995776a6f53977058fc13c47fa443"
+    },
+    {
+      "id": "json",
+      "repository": "moonbit-community/json",
+      "commit": "b9210b41406dba475338ef2e52193f79879de2a1"
+    }
+  ]
+}

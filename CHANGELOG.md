@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- Add a pinned ten-repository precision benchmark and baseline.
+- Add a repeatable snapshot runner and manual benchmark workflow.
+- Add identifier boundaries for generic call patterns.
+- Remove async `spawn()` and `prefetch()` false-positive matches.
+- Tighten random, filesystem, socket, and process API patterns.
+
 ## 0.4.0
 
 - Add unified-diff parsing for pull-request incremental scans.

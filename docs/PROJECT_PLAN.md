@@ -46,10 +46,10 @@ history-based flake score.
 ### Week 3: ecosystem validation
 
 - [x] Add diff-aware filtering for pull requests.
-- [ ] Run against at least ten public MoonBit repositories.
+- [x] Run against at least ten public MoonBit repositories.
 - [ ] Review every false positive and document the boundary.
 - [ ] Add fixture suites from accepted and rejected findings.
-- [ ] Measure scanner time on a large workspace.
+- [x] Establish a pinned regression baseline across the initial corpus.
 
 ### Week 4: release quality
 
