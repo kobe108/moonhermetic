@@ -43,6 +43,8 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 - 通过 `.moonhermetic.json` 按规则关闭、调整严重级别并设置排除路径。
 - 通过 unified diff 只报告 PR 新增行引入的问题。
 - 通过治理报告检查豁免负责人、用途和到期时间，避免永久性“临时例外”。
+- 提供可直接复用的 GitHub Action，自动安装 MoonBit、扫描调用方仓库并输出
+  SARIF 或治理 JSON。
 - 使用 10 个固定公开仓库和 531 个测试文件建立规则回归基准。
 - 使用 14 个正例和 5 个负例计算 reviewed precision、recall 和 specificity。
 - 使用固定 seed 的 SHA-256 分层抽样生成 20 条可重复审查样本。
@@ -53,8 +55,8 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 1. 第 1 周：在 10 个以上公开 MoonBit 仓库上做精度测试，建立真实 fixture。
 2. 第 2 周：加入 `.moonhermetic.json` 规则配置和过期豁免策略。
 3. 第 3 周：实现 diff-aware PR 模式，只报告修改行引入的风险。
-4. 第 4 周：发布 Windows/Linux/macOS 二进制、可复用 GitHub Action 和
-   Mooncakes 包。
+4. 第 4 周：发布 Windows/Linux/macOS 二进制和 Mooncakes 包；可复用
+   GitHub Action 已完成。
 
 ## 演示脚本
 

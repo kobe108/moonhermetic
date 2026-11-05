@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+- Add a reusable composite GitHub Action that installs MoonBit and runs the
+  scanner from the caller's repository.
+- Support scan, diff, SARIF, configuration, exclusion, and suppression audit
+  inputs without shell interpolation.
+- Output a stable `report-path` for artifact and code-scanning upload steps.
+- Add Node unit tests for action input planning and validation.
+- Add Linux, macOS, and Windows Action smoke coverage, including an expected
+  governance-gate failure.
+
 ## 0.7.0
 
 - Add a suppression governance audit for active, expiring, expired, legacy,

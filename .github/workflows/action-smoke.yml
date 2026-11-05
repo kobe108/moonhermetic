@@ -1,0 +1,71 @@
+name: Reusable Action
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test action input planning
+        run: node --test tests/action-runner.test.mjs
+
+      - name: Run the reusable action
+        id: moonhermetic
+        uses: ./
+        with:
+          path: examples/safe
+          format: text
+          fail-on: warning
+          output-file: ${{ runner.temp }}/moonhermetic-action.txt
+
+      - name: Verify the action report
+        shell: bash
+        env:
+          REPORT_PATH: ${{ steps.moonhermetic.outputs.report-path }}
+        run: |
+          node -e 'const fs = require("node:fs"); const report = process.env.REPORT_PATH; if (!fs.existsSync(report) || !fs.readFileSync(report, "utf8").includes("0 finding(s)")) process.exit(1)'
+
+  governance-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Audit suppressions
+        uses: ./
+        with:
+          path: examples/suppressions
+          audit-suppressions: true
+          output-file: ${{ runner.temp }}/moonhermetic-suppressions.json
+
+      - name: Reject expired suppressions
+        id: expected-failure
+        continue-on-error: true
+        uses: ./
+        with:
+          path: examples/suppressions
+          fail-on-suppression: true
+          output-file: ${{ runner.temp }}/moonhermetic-suppressions-gated.json
+
+      - name: Assert the governance gate failed
+        if: steps.expected-failure.outcome != 'failure'
+        shell: bash
+        run: |
+          echo "Expected the expired suppression to fail the action." >&2
+          exit 1

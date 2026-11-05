@@ -138,7 +138,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.7.0")
+        println("moonhermetic 0.8.0")
         @sys.exit(0)
       }
       "--rules" => {

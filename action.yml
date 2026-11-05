@@ -1,0 +1,77 @@
+name: MoonHermetic
+
+description: Static hermeticity auditing for MoonBit tests
+
+author: kobe108
+
+inputs:
+  path:
+    description: File or directory to scan, relative to the caller's workspace
+    required: false
+    default: "."
+  format:
+    description: >-
+      Output format: text, json, markdown, or sarif. Defaults to sarif for a
+      scan and json for a suppression audit.
+    required: false
+  fail-on:
+    description: Finding severity that fails a scan (never, warning, or error)
+    required: false
+    default: error
+  config:
+    description: >-
+      Configuration path relative to the caller's workspace. The caller's
+      .moonhermetic.json is discovered automatically when present.
+    required: false
+  exclude:
+    description: One or more path fragments to exclude, separated by newlines
+    required: false
+  diff:
+    description: Unified diff path relative to the caller's workspace
+    required: false
+  audit-suppressions:
+    description: Report suppression governance state instead of scanning
+    required: false
+    default: "false"
+  fail-on-suppression:
+    description: Fail the action for expired or invalid scoped suppressions
+    required: false
+    default: "false"
+  output-file:
+    description: >-
+      Report path relative to the caller's workspace, or - to print to the
+      action log. A conventional filename is chosen when omitted.
+    required: false
+
+outputs:
+  report-path:
+    description: Absolute path of the generated report, empty when using stdout
+    value: ${{ steps.moonhermetic.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up MoonBit
+      uses: hustcer/setup-moonbit@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Run MoonHermetic
+      id: moonhermetic
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_DIFF: ${{ inputs.diff }}
+        INPUT_AUDIT_SUPPRESSIONS: ${{ inputs.audit-suppressions }}
+        INPUT_FAIL_ON_SUPPRESSION: ${{ inputs.fail-on-suppression }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+      run: node "$ACTION_PATH/scripts/action-runner.mjs"
+
+branding:
+  icon: check-circle
+  color: green

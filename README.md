@@ -31,6 +31,7 @@ location and a concrete remediation before the test is executed.
   `// hermetic:ignore-next`.
 - Suppression governance reports for active, expiring, expired, legacy, and
   invalid directives.
+- A reusable GitHub Action with cross-platform smoke coverage.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -200,6 +201,40 @@ collecting directives.
 
 ## GitHub Actions
 
+The repository is also a composite Action. It installs MoonBit, scans the
+caller's workspace, respects the caller's `.moonhermetic.json`, and exposes the
+generated report path:
+
+```yaml
+permissions:
+  contents: read
+  security-events: write
+
+steps:
+  - uses: actions/checkout@v5
+
+  - name: MoonHermetic
+    id: hermetic
+    uses: kobe108/moonhermetic@v0.8.0
+    with:
+      path: .
+      format: sarif
+      fail-on: error
+
+  - name: Upload SARIF
+    if: always()
+    uses: github/codeql-action/upload-sarif@v4
+    with:
+      sarif_file: ${{ steps.hermetic.outputs.report-path }}
+```
+
+The Action defaults to SARIF for scans and JSON for suppression audits. It
+generates a conventional report filename when `output-file` is omitted. See
+[`docs/ACTION.md`](docs/ACTION.md) for all inputs, PR diff examples, the
+governance gate, and artifact uploads.
+
+The equivalent manual workflow is:
+
 ```yaml
 - name: Hermeticity audit
   env:
@@ -253,7 +288,7 @@ println(@moonhermetic.render_suppression_audit_json(governance))
 ## Roadmap
 
 - Add precision fixtures from real MoonBit projects.
-- Ship signed native binaries and a reusable GitHub Action.
+- Ship signed native binaries.
 
 ## Development
 
@@ -262,6 +297,7 @@ moon fmt
 moon check
 moon test
 moon info
+node --test tests/action-runner.test.mjs
 ```
 
 Run the network-backed real-project benchmark with:

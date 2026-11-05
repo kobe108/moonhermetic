@@ -56,7 +56,7 @@ history-based flake score.
 ### Week 4: release quality
 
 - [ ] Add release binaries for Windows, Linux, and macOS.
-- [ ] Publish a reusable GitHub Action.
+- [x] Publish a reusable GitHub Action.
 - [ ] Publish the library to Mooncakes.
 - [ ] Complete API docs, changelog, and demo recording.
 
