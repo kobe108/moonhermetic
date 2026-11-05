@@ -1,10 +1,12 @@
 {
   "schema": "moonhermetic/precision-baseline-v1",
-  "scannerVersion": "0.5.0",
+  "scannerVersion": "0.6.0",
   "recordedAt": "2026-11-06",
   "reviewedCases": {
     "positives": 14,
-    "negatives": 5
+    "negatives": 5,
+    "stratifiedPositive": 20,
+    "stratifiedNegative": 0
   },
   "summary": {
     "repositories": 10,

@@ -1,0 +1,227 @@
+{
+  "schema": "moonhermetic/stratified-sample-v1",
+  "seed": "moonhermetic-precision-v1",
+  "perRule": 3,
+  "cases": [
+    {
+      "id": "herm-clock-moonbitlang-async-100",
+      "repository": "moonbitlang-async",
+      "path": "src/lazy_init_test.mbt",
+      "line": 100,
+      "column": 21,
+      "ruleId": "HERM-CLOCK",
+      "expected": "finding",
+      "evidence": "let start = @async.now()",
+      "reason": "Live clock read used by a timing assertion."
+    },
+    {
+      "id": "herm-clock-moonbitlang-async-69",
+      "repository": "moonbitlang-async",
+      "path": "src/external_loop_integration/external_loop_test.mbt",
+      "line": 69,
+      "column": 25,
+      "ruleId": "HERM-CLOCK",
+      "expected": "finding",
+      "evidence": "let start = @async.now()",
+      "reason": "The integration test measures elapsed wall-clock time."
+    },
+    {
+      "id": "herm-clock-moonbitlang-async-40",
+      "repository": "moonbitlang-async",
+      "path": "src/retry_test.mbt",
+      "line": 40,
+      "column": 21,
+      "ruleId": "HERM-CLOCK",
+      "expected": "finding",
+      "evidence": "let start = @async.now()",
+      "reason": "Retry behavior is asserted against live elapsed time."
+    },
+    {
+      "id": "herm-env-moonbitlang-async-68",
+      "repository": "moonbitlang-async",
+      "path": "src/process/env_test.mbt",
+      "line": 68,
+      "column": 3,
+      "ruleId": "HERM-ENV",
+      "expected": "finding",
+      "evidence": "@env.set_env_var(name, \"old_value\")",
+      "reason": "The test mutates ambient process environment state."
+    },
+    {
+      "id": "herm-env-moonbitlang-x-17",
+      "repository": "moonbitlang-x",
+      "path": "path/internal/ffi/is_windows_test.mbt",
+      "line": 17,
+      "column": 13,
+      "ruleId": "HERM-ENV",
+      "expected": "finding",
+      "evidence": "let env = @env.get_env_vars()",
+      "reason": "The test reads ambient process environment variables."
+    },
+    {
+      "id": "herm-fs-moonbitlang-async-46",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/relative_open_test.mbt",
+      "line": 46,
+      "column": 10,
+      "ruleId": "HERM-FS",
+      "expected": "finding",
+      "evidence": "defer (@fs.rmdir(new_path, recursive=true) catch { _ => () })",
+      "reason": "The test mutates filesystem state."
+    },
+    {
+      "id": "herm-fs-moonbitlang-async-70",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/mkdir_test.mbt",
+      "line": 70,
+      "column": 5,
+      "ruleId": "HERM-FS",
+      "expected": "finding",
+      "evidence": "@fs.mkdir(path, recursive=true)",
+      "reason": "The test creates an external directory."
+    },
+    {
+      "id": "herm-fs-rabbita-111",
+      "repository": "rabbita",
+      "path": "warren/mbtx_entry_wbtest.mbt",
+      "line": 111,
+      "column": 3,
+      "ruleId": "HERM-FS",
+      "expected": "finding",
+      "evidence": "@fs.symlink(target=outside, source_path_to_string(outside_link))",
+      "reason": "The test creates a filesystem symlink."
+    },
+    {
+      "id": "herm-net-moonbitlang-async-158",
+      "repository": "moonbitlang-async",
+      "path": "src/websocket/websocket_test.mbt",
+      "line": 158,
+      "column": 18,
+      "ruleId": "HERM-NET",
+      "expected": "finding",
+      "evidence": "let server = @http.Server(@socket.Addr::parse(\"127.0.0.1:0\"))",
+      "reason": "The test starts a live HTTP test server."
+    },
+    {
+      "id": "herm-net-moonbitlang-async-189",
+      "repository": "moonbitlang-async",
+      "path": "src/http/proxy_test.mbt",
+      "line": 189,
+      "column": 13,
+      "ruleId": "HERM-NET",
+      "expected": "finding",
+      "evidence": "let _ = @http.post(\"http://127.0.0.1:\\{port}\", \"efgh\", proxy=proxy())",
+      "reason": "The test sends a live HTTP request."
+    },
+    {
+      "id": "herm-net-moonbitlang-async-45",
+      "repository": "moonbitlang-async",
+      "path": "src/socket/getsockname_test.mbt",
+      "line": 45,
+      "column": 18,
+      "ruleId": "HERM-NET",
+      "expected": "finding",
+      "evidence": "let server = @socket.UdpServer(@socket.Addr::parse(\"127.0.0.1:0\"))",
+      "reason": "The test binds a UDP server socket."
+    },
+    {
+      "id": "herm-proc-moonbitlang-async-31",
+      "repository": "moonbitlang-async",
+      "path": "src/signal/signal_test.mbt",
+      "line": 31,
+      "column": 7,
+      "ruleId": "HERM-PROC",
+      "expected": "finding",
+      "evidence": "@process.run(test_prog, stdout=w, [",
+      "reason": "The test starts an external test program."
+    },
+    {
+      "id": "herm-proc-moonbitlang-async-19",
+      "repository": "moonbitlang-async",
+      "path": "src/process/spawn_in_group_test.mbt",
+      "line": 19,
+      "column": 16,
+      "ruleId": "HERM-PROC",
+      "expected": "finding",
+      "evidence": "let proc = @process.spawn(group, sleep, [\"500\"])",
+      "reason": "The test starts a child process."
+    },
+    {
+      "id": "herm-proc-moonbitlang-async-112",
+      "repository": "moonbitlang-async",
+      "path": "src/shell/pipeline_test.mbt",
+      "line": 112,
+      "column": 15,
+      "ruleId": "HERM-PROC",
+      "expected": "finding",
+      "evidence": "let piped = @shell.Pipeline([",
+      "reason": "The test executes an external shell pipeline."
+    },
+    {
+      "id": "herm-rand-moondiff-14",
+      "repository": "moondiff",
+      "path": "review-web/backend/internal/crypto/crypto_wbtest.mbt",
+      "line": 14,
+      "column": 13,
+      "ruleId": "HERM-RAND",
+      "expected": "finding",
+      "evidence": "let key = random_bytes(64)",
+      "reason": "The test generates an unseeded encryption key."
+    },
+    {
+      "id": "herm-rand-moondiff-3",
+      "repository": "moondiff",
+      "path": "review-web/backend/internal/crypto/crypto_wbtest.mbt",
+      "line": 3,
+      "column": 13,
+      "ruleId": "HERM-RAND",
+      "expected": "finding",
+      "evidence": "let key = random_bytes(64)",
+      "reason": "The test generates an unseeded encryption key."
+    },
+    {
+      "id": "herm-rand-moondiff-5",
+      "repository": "moondiff",
+      "path": "review-web/backend/internal/crypto/crypto_wbtest.mbt",
+      "line": 5,
+      "column": 21,
+      "ruleId": "HERM-RAND",
+      "expected": "finding",
+      "evidence": "let plaintext = random_bytes(length)",
+      "reason": "The test generates unseeded random plaintext."
+    },
+    {
+      "id": "herm-sleep-moonbitlang-async-147",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/named_pipe_test.mbt",
+      "line": 147,
+      "column": 12,
+      "ruleId": "HERM-SLEEP",
+      "expected": "finding",
+      "evidence": "@async.sleep(100)",
+      "reason": "The test waits using a fixed sleep interval."
+    },
+    {
+      "id": "herm-sleep-moonbitlang-async-157",
+      "repository": "moonbitlang-async",
+      "path": "src/cancellation_test.mbt",
+      "line": 157,
+      "column": 50,
+      "ruleId": "HERM-SLEEP",
+      "expected": "finding",
+      "evidence": "if @async.handle_cancellation(() => @async.sleep(1000)) is None {",
+      "reason": "Cancellation behavior is coordinated with a fixed delay."
+    },
+    {
+      "id": "herm-sleep-moonbitlang-async-176",
+      "repository": "moonbitlang-async",
+      "path": "src/aqueue/aqueue_test.mbt",
+      "line": 176,
+      "column": 14,
+      "ruleId": "HERM-SLEEP",
+      "expected": "finding",
+      "evidence": "@async.sleep(100)",
+      "reason": "Queue behavior is coordinated with elapsed time."
+    }
+  ]
+}

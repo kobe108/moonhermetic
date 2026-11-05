@@ -49,6 +49,7 @@ history-based flake score.
 - [x] Run against at least ten public MoonBit repositories.
 - [ ] Review every false positive and document the boundary.
 - [x] Add reviewed positive and negative cases from public projects.
+- [x] Add deterministic stratified sampling and a reviewed precision sample.
 - [x] Establish a pinned regression baseline across the initial corpus.
 
 ### Week 4: release quality

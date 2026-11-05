@@ -81,6 +81,38 @@ The current reviewed sample scores 100% on all three measures. This is a
 regression gate for reviewed examples, not an estimate of corpus-wide accuracy.
 Larger conclusions require labeling a random or stratified sample of findings.
 
+## Stratified sample
+
+The sampler selects findings deterministically with SHA-256 over:
+
+```text
+seed | repository | path | line | rule ID
+```
+
+Generate a review queue after running the benchmark:
+
+```powershell
+pwsh scripts/sample-precision.ps1 `
+  -WorkDir work/precision-benchmark `
+  -PerRule 3 `
+  -Output work/stratified-review-queue.json
+```
+
+The committed
+[`benchmarks/stratified-sample.json`](../benchmarks/stratified-sample.json)
+contains the reviewed first queue:
+
+- Seed: `moonhermetic-precision-v1`
+- Up to three findings per rule
+- 20 reviewed findings
+- 20 true positives, 0 false positives
+
+The benchmark reports this sample separately as `STRATIFIED`. Precision and
+recall are 100%; specificity is `n/a` because this queue samples only predicted
+findings and contains no known negatives. Keeping reviewed and stratified
+metrics separate prevents the directed negative cases from inflating the
+sample score.
+
 ## Initial rule tuning
 
 The first corpus run produced 1430 findings. Reviewing the most frequent

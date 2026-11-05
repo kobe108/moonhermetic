@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- Add deterministic SHA-256 stratified sampling across corpus rules.
+- Add a 20-case stratified reviewed sample.
+- Report reviewed and stratified precision/recall metrics separately.
+- Keep specificity explicit as `n/a` when a sample contains no negatives.
+
 ## 0.5.0
 
 - Add a pinned ten-repository precision benchmark and baseline.

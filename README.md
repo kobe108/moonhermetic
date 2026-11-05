@@ -34,6 +34,7 @@ location and a concrete remediation before the test is executed.
 - Unified-diff mode that reports only findings introduced on changed lines.
 - A pinned ten-repository precision baseline for detecting heuristic drift.
 - A 19-case reviewed sample for precision, recall, and specificity checks.
+- Deterministic stratified sampling with a 20-case reviewed precision sample.
 - Text, JSON, Markdown, and SARIF 2.1.0 output.
 - CI-friendly exit codes and deterministic file traversal.
 - No opinionated test-replacement framework: it points to the boundary that

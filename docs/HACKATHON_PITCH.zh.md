@@ -42,6 +42,7 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 - 通过 unified diff 只报告 PR 新增行引入的问题。
 - 使用 10 个固定公开仓库和 531 个测试文件建立规则回归基准。
 - 使用 14 个正例和 5 个负例计算 reviewed precision、recall 和 specificity。
+- 使用固定 seed 的 SHA-256 分层抽样生成 20 条可重复审查样本。
 - 单元测试和安全/风险示例。
 
 ## 一个月迭代计划

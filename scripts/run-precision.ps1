@@ -9,6 +9,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $corpusPath = Join-Path $repoRoot "benchmarks/precision-corpus.json"
 $baselinePath = Join-Path $repoRoot "benchmarks/precision-baseline.json"
 $reviewedPath = Join-Path $repoRoot "benchmarks/reviewed-cases.json"
+$stratifiedPath = Join-Path $repoRoot "benchmarks/stratified-sample.json"
 $workRoot = if ([IO.Path]::IsPathRooted($WorkDir)) {
   $WorkDir
 } else {
@@ -35,6 +36,7 @@ if (-not (Get-Command moon -ErrorAction SilentlyContinue)) {
 $corpus = Get-Content $corpusPath -Raw | ConvertFrom-Json
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $reviewed = Get-Content $reviewedPath -Raw | ConvertFrom-Json
+$stratified = Get-Content $stratifiedPath -Raw | ConvertFrom-Json
 $rules = @(
   "HERM-CLOCK",
   "HERM-RAND",
@@ -215,81 +217,111 @@ try {
   Pop-Location
 }
 
-$truePositive = 0
-$falseNegative = 0
-$trueNegative = 0
-$falsePositive = 0
-$caseFailures = @()
-foreach ($case in $reviewed.cases) {
-  $scan = $scanResults[$case.repository]
-  if ($null -eq $scan) {
-    $caseFailures += "$($case.id): repository report is missing"
-    continue
+function Get-ReviewedMetrics {
+  param(
+    $Cases,
+    $ScanResults
+  )
+
+  $truePositive = 0
+  $falseNegative = 0
+  $trueNegative = 0
+  $falsePositive = 0
+  $caseFailures = @()
+  foreach ($case in $Cases) {
+    $scan = $ScanResults[$case.repository]
+    if ($null -eq $scan) {
+      $caseFailures += "$($case.id): repository report is missing"
+      continue
+    }
+    $detected = Test-ReviewedFinding -Findings $scan.findings -Case $case
+    if ($case.expected -eq "finding") {
+      if ($detected) {
+        $truePositive += 1
+      } else {
+        $falseNegative += 1
+        $caseFailures += "$($case.id): expected finding was not detected"
+      }
+    } elseif ($case.expected -eq "no-finding") {
+      if ($detected) {
+        $falsePositive += 1
+        $caseFailures += "$($case.id): unexpected finding was reported"
+      } else {
+        $trueNegative += 1
+      }
+    } else {
+      $caseFailures += "$($case.id): unsupported expectation '$($case.expected)'"
+    }
   }
-  $detected = Test-ReviewedFinding -Findings $scan.findings -Case $case
-  if ($case.expected -eq "finding") {
-    if ($detected) {
-      $truePositive += 1
-    } else {
-      $falseNegative += 1
-      $caseFailures += "$($case.id): expected finding was not detected"
-    }
-  } elseif ($case.expected -eq "no-finding") {
-    if ($detected) {
-      $falsePositive += 1
-      $caseFailures += "$($case.id): unexpected finding was reported"
-    } else {
-      $trueNegative += 1
-    }
+
+  $precisionDenominator = $truePositive + $falsePositive
+  $recallDenominator = $truePositive + $falseNegative
+  $specificityDenominator = $trueNegative + $falsePositive
+  $precision = if ($precisionDenominator -gt 0) {
+    [Math]::Round(100 * $truePositive / $precisionDenominator, 2)
   } else {
-    $caseFailures += "$($case.id): unsupported expectation '$($case.expected)'"
+    $null
+  }
+  $recall = if ($recallDenominator -gt 0) {
+    [Math]::Round(100 * $truePositive / $recallDenominator, 2)
+  } else {
+    $null
+  }
+  $specificity = if ($specificityDenominator -gt 0) {
+    [Math]::Round(100 * $trueNegative / $specificityDenominator, 2)
+  } else {
+    $null
+  }
+
+  [pscustomobject]@{
+    Summary = [ordered]@{
+      truePositive = $truePositive
+      falsePositive = $falsePositive
+      trueNegative = $trueNegative
+      falseNegative = $falseNegative
+      precisionPercent = $precision
+      recallPercent = $recall
+      specificityPercent = $specificity
+    }
+    Failures = $caseFailures
   }
 }
 
-$precisionDenominator = $truePositive + $falsePositive
-$recallDenominator = $truePositive + $falseNegative
-$specificityDenominator = $trueNegative + $falsePositive
-$precision = if ($precisionDenominator -gt 0) {
-  [Math]::Round(100 * $truePositive / $precisionDenominator, 2)
-} else {
-  0
-}
-$recall = if ($recallDenominator -gt 0) {
-  [Math]::Round(100 * $truePositive / $recallDenominator, 2)
-} else {
-  0
-}
-$specificity = if ($specificityDenominator -gt 0) {
-  [Math]::Round(100 * $trueNegative / $specificityDenominator, 2)
-} else {
-  0
+function Write-ReviewedMetrics {
+  param(
+    [string]$Name,
+    $Metrics
+  )
+
+  $summary = $Metrics.Summary
+  $summary |
+    ConvertTo-Json -Depth 4 |
+    Set-Content -Path (Join-Path $reportRoot "$Name-summary.json") -Encoding utf8
+
+  $formatPercent = {
+    param($Value)
+    if ($null -eq $Value) { "n/a" } else { "$Value%" }
+  }
+  $line =
+    "{0}: precision={1} recall={2} specificity={3} " +
+    "(TP={4}, FP={5}, TN={6}, FN={7})"
+  $line = $line -f
+    $Name.ToUpperInvariant(),
+    (& $formatPercent $summary.precisionPercent),
+    (& $formatPercent $summary.recallPercent),
+    (& $formatPercent $summary.specificityPercent),
+    $summary.truePositive,
+    $summary.falsePositive,
+    $summary.trueNegative,
+    $summary.falseNegative
+  Write-Host $line
 }
 
-$reviewedSummary = [ordered]@{
-  truePositive = $truePositive
-  falsePositive = $falsePositive
-  trueNegative = $trueNegative
-  falseNegative = $falseNegative
-  precisionPercent = $precision
-  recallPercent = $recall
-  specificityPercent = $specificity
-}
-$reviewedSummary |
-  ConvertTo-Json -Depth 4 |
-  Set-Content -Path (Join-Path $reportRoot "reviewed-summary.json") -Encoding utf8
-
-$reviewedLine =
-  "REVIEWED: precision={0}% recall={1}% specificity={2}% " +
-  "(TP={3}, FP={4}, TN={5}, FN={6})"
-$reviewedLine = $reviewedLine -f
-  $precision,
-  $recall,
-  $specificity,
-  $truePositive,
-  $falsePositive,
-  $trueNegative,
-  $falseNegative
-Write-Host $reviewedLine
+$reviewedMetrics = Get-ReviewedMetrics -Cases $reviewed.cases -ScanResults $scanResults
+$stratifiedMetrics = Get-ReviewedMetrics -Cases $stratified.cases -ScanResults $scanResults
+Write-ReviewedMetrics -Name "reviewed" -Metrics $reviewedMetrics
+Write-ReviewedMetrics -Name "stratified" -Metrics $stratifiedMetrics
+$caseFailures = @($reviewedMetrics.Failures) + @($stratifiedMetrics.Failures)
 
 $totalTestFiles = (
   $actualRepositories |
