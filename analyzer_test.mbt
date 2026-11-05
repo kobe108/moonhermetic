@@ -104,8 +104,23 @@ test "does not treat address parsing or unimplemented probes as effects" {
     #|test "helpers" {
     #|  ignore(@socket.Addr::parse("127.0.0.1:80"))
     #|  ignore(@process.unimplemented)
+    #|  ignore(@fs.unimplemented)
+    #|  ignore(@http.Request::new())
     #|}
   assert_eq(@moonhermetic.scan_source("demo_test.mbt", source).length(), 0)
+}
+
+///|
+test "detects environment writes and removals" {
+  let source =
+    #|test "environment mutation" {
+    #|  @env.set_env_var("CI", "1")
+    #|  @env.unset_env_var("CI")
+    #|}
+  let findings = @moonhermetic.scan_source("demo_test.mbt", source)
+  assert_eq(findings.length(), 2)
+  assert_true(findings[0].rule == @moonhermetic.Environment)
+  assert_true(findings[1].rule == @moonhermetic.Environment)
 }
 
 ///|

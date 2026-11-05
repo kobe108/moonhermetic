@@ -4,9 +4,11 @@
 
 - Add a pinned ten-repository precision benchmark and baseline.
 - Add a repeatable snapshot runner and manual benchmark workflow.
+- Add 19 manually reviewed positive and negative cases with precision metrics.
 - Add identifier boundaries for generic call patterns.
 - Remove async `spawn()` and `prefetch()` false-positive matches.
-- Tighten random, filesystem, socket, and process API patterns.
+- Tighten random, HTTP, filesystem, socket, and process API patterns.
+- Detect environment variable writes and removals.
 
 ## 0.4.0
 

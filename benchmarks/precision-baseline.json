@@ -2,17 +2,21 @@
   "schema": "moonhermetic/precision-baseline-v1",
   "scannerVersion": "0.5.0",
   "recordedAt": "2026-11-06",
+  "reviewedCases": {
+    "positives": 14,
+    "negatives": 5
+  },
   "summary": {
     "repositories": 10,
     "testFiles": 531,
-    "findings": 1233,
+    "findings": 1178,
     "byRule": {
       "HERM-CLOCK": 59,
       "HERM-RAND": 6,
-      "HERM-ENV": 1,
-      "HERM-NET": 162,
+      "HERM-ENV": 2,
+      "HERM-NET": 128,
       "HERM-PROC": 129,
-      "HERM-FS": 498,
+      "HERM-FS": 476,
       "HERM-SLEEP": 378
     }
   },
@@ -20,28 +24,28 @@
     {
       "id": "moonbitlang-x",
       "testFiles": 75,
-      "findings": 84,
+      "findings": 77,
       "byRule": {
         "HERM-CLOCK": 6,
         "HERM-RAND": 1,
         "HERM-ENV": 1,
         "HERM-NET": 0,
         "HERM-PROC": 0,
-        "HERM-FS": 76,
+        "HERM-FS": 69,
         "HERM-SLEEP": 0
       }
     },
     {
       "id": "moonbitlang-async",
       "testFiles": 169,
-      "findings": 1106,
+      "findings": 1065,
       "byRule": {
         "HERM-CLOCK": 51,
         "HERM-RAND": 0,
-        "HERM-ENV": 0,
-        "HERM-NET": 151,
+        "HERM-ENV": 1,
+        "HERM-NET": 124,
         "HERM-PROC": 129,
-        "HERM-FS": 400,
+        "HERM-FS": 385,
         "HERM-SLEEP": 375
       }
     },
@@ -62,12 +66,12 @@
     {
       "id": "moondiff",
       "testFiles": 159,
-      "findings": 16,
+      "findings": 13,
       "byRule": {
         "HERM-CLOCK": 2,
         "HERM-RAND": 5,
         "HERM-ENV": 0,
-        "HERM-NET": 6,
+        "HERM-NET": 3,
         "HERM-PROC": 0,
         "HERM-FS": 0,
         "HERM-SLEEP": 3
@@ -118,12 +122,12 @@
     {
       "id": "rabbita",
       "testFiles": 43,
-      "findings": 27,
+      "findings": 23,
       "byRule": {
         "HERM-CLOCK": 0,
         "HERM-RAND": 0,
         "HERM-ENV": 0,
-        "HERM-NET": 5,
+        "HERM-NET": 1,
         "HERM-PROC": 0,
         "HERM-FS": 22,
         "HERM-SLEEP": 0

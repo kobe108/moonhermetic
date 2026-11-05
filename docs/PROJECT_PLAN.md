@@ -48,7 +48,7 @@ history-based flake score.
 - [x] Add diff-aware filtering for pull requests.
 - [x] Run against at least ten public MoonBit repositories.
 - [ ] Review every false positive and document the boundary.
-- [ ] Add fixture suites from accepted and rejected findings.
+- [x] Add reviewed positive and negative cases from public projects.
 - [x] Establish a pinned regression baseline across the initial corpus.
 
 ### Week 4: release quality

@@ -23,17 +23,17 @@ repositories are not copied into this repository.
 
 | Repository | Test files | Baseline findings |
 |---|---:|---:|
-| `moonbitlang/x` | 75 | 84 |
-| `moonbitlang/async` | 169 | 1106 |
+| `moonbitlang/x` | 75 | 77 |
+| `moonbitlang/async` | 169 | 1065 |
 | `moonbit-community/serde.mbt` | 14 | 0 |
-| `moonbit-community/moondiff` | 159 | 16 |
+| `moonbit-community/moondiff` | 159 | 13 |
 | `moonbit-community/prettyprinter` | 3 | 0 |
 | `bobzhang/difflib.mbt` | 7 | 0 |
 | `moonbit-community/cmark.mbt` | 52 | 0 |
-| `moonbit-community/rabbita` | 43 | 27 |
+| `moonbit-community/rabbita` | 43 | 23 |
 | `moonbitlang/quickcheck` | 4 | 0 |
 | `moonbit-community/json` | 5 | 0 |
-| **Total** | **531** | **1233** |
+| **Total** | **531** | **1178** |
 
 ## Running
 
@@ -62,6 +62,25 @@ pwsh scripts/run-precision.ps1 -UpdateBaseline
 The GitHub Actions workflow `Precision benchmark` exposes the same check as a
 manual workflow so network-heavy corpus updates do not slow every push.
 
+## Reviewed cases
+
+[`benchmarks/reviewed-cases.json`](../benchmarks/reviewed-cases.json) contains
+19 manually reviewed cases from the pinned snapshots:
+
+- 14 positive cases that should produce a finding.
+- 5 negative cases that previously produced clear false positives.
+
+Each case records the repository, relative path, line, rule ID, expectation,
+and review reason. The runner reports:
+
+- Precision: true positives / (true positives + false positives).
+- Recall: true positives / (true positives + false negatives).
+- Specificity: true negatives / (true negatives + false positives).
+
+The current reviewed sample scores 100% on all three measures. This is a
+regression gate for reviewed examples, not an estimate of corpus-wide accuracy.
+Larger conclusions require labeling a random or stratified sample of findings.
+
 ## Initial rule tuning
 
 The first corpus run produced 1430 findings. Reviewing the most frequent
@@ -77,7 +96,13 @@ removed 72 findings.
 A second pass narrowed `@socket.` and `@process.` namespace matches to actual
 connect, server, resolve, run, and spawn operations. Address parsing, explicit
 unimplemented probes, and pure pipe helpers no longer count as live operations.
-This removed another 125 findings, leaving the current baseline of 1233.
+This removed another 125 findings.
+
+A third pass replaced broad HTTP and filesystem namespaces with explicit
+operation names. Type references such as `@http.Request` and `@fs.File`, plus
+`@fs.unimplemented`, no longer become findings. Environment variable writes and
+removals were added as real process-environment dependencies. The net result
+is 1178 findings, 252 fewer than the first run.
 
 ## Limitations
 

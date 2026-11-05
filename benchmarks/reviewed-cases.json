@@ -1,0 +1,177 @@
+{
+  "schema": "moonhermetic/reviewed-cases-v1",
+  "description": "A manually reviewed sample of positive and negative findings from the pinned public corpus.",
+  "cases": [
+    {
+      "id": "clock-retry-timer",
+      "repository": "moonbitlang-async",
+      "path": "src/retry_test.mbt",
+      "line": 40,
+      "ruleId": "HERM-CLOCK",
+      "expected": "finding",
+      "reason": "The retry test measures elapsed wall-clock time."
+    },
+    {
+      "id": "clock-timer-test",
+      "repository": "moonbitlang-async",
+      "path": "src/timer_test.mbt",
+      "line": 119,
+      "ruleId": "HERM-CLOCK",
+      "expected": "finding",
+      "reason": "The timer test asserts behavior against the live clock."
+    },
+    {
+      "id": "random-environment-rng",
+      "repository": "moonbitlang-x",
+      "path": "fs/whole_file_contract_test.mbt",
+      "line": 17,
+      "ruleId": "HERM-RAND",
+      "expected": "finding",
+      "reason": "The test calls the ambient environment random generator."
+    },
+    {
+      "id": "random-crypto-bytes",
+      "repository": "moondiff",
+      "path": "review-web/backend/internal/crypto/crypto_wbtest.mbt",
+      "line": 3,
+      "ruleId": "HERM-RAND",
+      "expected": "finding",
+      "reason": "The test generates an unseeded encryption key with random_bytes."
+    },
+    {
+      "id": "environment-read",
+      "repository": "moonbitlang-x",
+      "path": "path/internal/ffi/is_windows_test.mbt",
+      "line": 17,
+      "ruleId": "HERM-ENV",
+      "expected": "finding",
+      "reason": "The test reads all ambient process environment variables."
+    },
+    {
+      "id": "environment-write",
+      "repository": "moonbitlang-async",
+      "path": "src/process/env_test.mbt",
+      "line": 68,
+      "ruleId": "HERM-ENV",
+      "expected": "finding",
+      "reason": "The test mutates ambient process environment state."
+    },
+    {
+      "id": "network-tcp-server",
+      "repository": "moonbitlang-async",
+      "path": "src/http/proxy_test.mbt",
+      "line": 19,
+      "ruleId": "HERM-NET",
+      "expected": "finding",
+      "reason": "The proxy test binds a real TCP server."
+    },
+    {
+      "id": "network-http-client",
+      "repository": "moonbitlang-async",
+      "path": "src/http/proxy_test.mbt",
+      "line": 36,
+      "ruleId": "HERM-NET",
+      "expected": "finding",
+      "reason": "The proxy test creates a live HTTP client."
+    },
+    {
+      "id": "process-child",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/lock_test.mbt",
+      "line": 39,
+      "ruleId": "HERM-PROC",
+      "expected": "finding",
+      "reason": "The lock test starts a child process."
+    },
+    {
+      "id": "process-shell",
+      "repository": "moonbitlang-async",
+      "path": "src/shell/run_test.mbt",
+      "line": 22,
+      "ruleId": "HERM-PROC",
+      "expected": "finding",
+      "reason": "The shell test executes an external command."
+    },
+    {
+      "id": "filesystem-directory",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/dir_test.mbt",
+      "line": 17,
+      "ruleId": "HERM-FS",
+      "expected": "finding",
+      "reason": "The test opens a filesystem directory."
+    },
+    {
+      "id": "filesystem-file",
+      "repository": "moonbitlang-async",
+      "path": "src/fs/dir_test.mbt",
+      "line": 28,
+      "ruleId": "HERM-FS",
+      "expected": "finding",
+      "reason": "The test opens an external file."
+    },
+    {
+      "id": "sleep-wait",
+      "repository": "moonbitlang-async",
+      "path": "src/wait_test.mbt",
+      "line": 20,
+      "ruleId": "HERM-SLEEP",
+      "expected": "finding",
+      "reason": "The timing test depends on a sleep interval."
+    },
+    {
+      "id": "sleep-mutex",
+      "repository": "moonbitlang-async",
+      "path": "src/mutex_test.mbt",
+      "line": 24,
+      "ruleId": "HERM-SLEEP",
+      "expected": "finding",
+      "reason": "The mutex test uses elapsed time to coordinate contention."
+    },
+    {
+      "id": "negative-prefetch",
+      "repository": "moondiff",
+      "path": "review-web/frontend/internal/github_client/snapshot_wbtest.mbt",
+      "line": 600,
+      "ruleId": "HERM-NET",
+      "expected": "no-finding",
+      "reason": "stop_prefetch is not a network fetch operation."
+    },
+    {
+      "id": "negative-address-parse",
+      "repository": "moonbitlang-async",
+      "path": "src/raw_fd/raw_fd_test.mbt",
+      "line": 176,
+      "ruleId": "HERM-NET",
+      "expected": "no-finding",
+      "reason": "Parsing an address string performs no network I/O."
+    },
+    {
+      "id": "negative-process-probe",
+      "repository": "moonbitlang-async",
+      "path": "src/websocket/unimplemented_test.mbt",
+      "line": 21,
+      "ruleId": "HERM-PROC",
+      "expected": "no-finding",
+      "reason": "The unimplemented probe does not start a process."
+    },
+    {
+      "id": "negative-filesystem-probe",
+      "repository": "moonbitlang-async",
+      "path": "src/stdio/unimplemented_test.mbt",
+      "line": 19,
+      "ruleId": "HERM-FS",
+      "expected": "no-finding",
+      "reason": "The unimplemented file API probe does not access the filesystem."
+    },
+    {
+      "id": "negative-async-spawn",
+      "repository": "moonbitlang-async",
+      "path": "src/cancellation_test.mbt",
+      "line": 19,
+      "ruleId": "HERM-PROC",
+      "expected": "no-finding",
+      "reason": "Async task spawn is structured concurrency, not a child process."
+    }
+  ]
+}

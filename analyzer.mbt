@@ -92,13 +92,15 @@ fn patterns_for(rule : RuleKind) -> Array[String] {
       ]
     Environment =>
       [
-        "@env.get_env_var(", "@env.get_env_vars(", "getenv(", "process.env", "env_var(",
+        "@env.get_env_var(", "@env.get_env_vars(", "@env.set_env_var(", "@env.unset_env_var(",
+        "getenv(", "process.env", "env_var(",
       ]
     Network =>
       [
-        "@http.", "@websocket.connect(", "@socket.Tcp::connect(", "@socket.TcpServer(",
-        "@socket.UdpClient(", "@socket.UdpServer(", "@socket.Addr::resolve(", "http_get(",
-        "http_post(", "fetch(", ".connect(", "listen(", "dns_",
+        "@http.Client(", "@http.Server(", "@http.get_stream(", "@http.post(", "@http.post_stream(",
+        "@http.put(", "@http.put_stream(", "@websocket.connect(", "@socket.Tcp::connect(",
+        "@socket.TcpServer(", "@socket.UdpClient(", "@socket.UdpServer(", "@socket.Addr::resolve(",
+        "http_get(", "http_post(", "fetch(", ".connect(", "listen(", "dns_",
       ]
     Process =>
       [
@@ -107,8 +109,14 @@ fn patterns_for(rule : RuleKind) -> Array[String] {
       ]
     Filesystem =>
       [
-        "@fs.", "read_file(", "write_file(", "read_dir(", "path_exists(", "is_file(",
-        "is_dir(", "File::open(",
+        "@fs.atime(", "@fs.can_execute(", "@fs.can_read(", "@fs.can_write(", "@fs.chmod(",
+        "@fs.create(", "@fs.ctime(", "@fs.exists(", "@fs.kind(", "@fs.mkdir(", "@fs.mtime(",
+        "@fs.open(", "@fs.opendir(", "@fs.rename(", "@fs.realpath(", "@fs.remove(",
+        "@fs.remove_dir(", "@fs.remove_file(", "@fs.rmdir(", "@fs.symlink(", "@fs.tmpdir(",
+        "@fs.walk(", "@fs.Watcher(", "@fs.read_dir(", "@fs.read_file(", "@fs.read_file_to_bytes(",
+        "@fs.read_file_to_string(", "@fs.readdir(", "@fs.write_bytes_to_file(", "@fs.write_file(",
+        "@fs.write_string_to_file(", "read_file(", "write_file(", "read_dir(", "path_exists(",
+        "is_file(", "is_dir(", "File::open(",
       ]
     Sleep => ["sleep(", "delay(", "wait_until(", "Thread::sleep"]
   }

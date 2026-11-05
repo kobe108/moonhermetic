@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $corpusPath = Join-Path $repoRoot "benchmarks/precision-corpus.json"
 $baselinePath = Join-Path $repoRoot "benchmarks/precision-baseline.json"
+$reviewedPath = Join-Path $repoRoot "benchmarks/reviewed-cases.json"
 $workRoot = if ([IO.Path]::IsPathRooted($WorkDir)) {
   $WorkDir
 } else {
@@ -33,6 +34,7 @@ if (-not (Get-Command moon -ErrorAction SilentlyContinue)) {
 
 $corpus = Get-Content $corpusPath -Raw | ConvertFrom-Json
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
+$reviewed = Get-Content $reviewedPath -Raw | ConvertFrom-Json
 $rules = @(
   "HERM-CLOCK",
   "HERM-RAND",
@@ -112,7 +114,26 @@ function Get-RuleCounts {
   $counts
 }
 
+function Test-ReviewedFinding {
+  param(
+    $Findings,
+    $Case
+  )
+
+  $expectedPath = $Case.path.Replace("\", "/")
+  @(
+    $Findings |
+      Where-Object {
+        $actualPath = $_.path.Replace("\", "/")
+        $_.ruleId -eq $Case.ruleId -and
+        $_.line -eq [int]$Case.line -and
+        ($actualPath -eq $expectedPath -or $actualPath.EndsWith("/$expectedPath"))
+      }
+  ).Count -gt 0
+}
+
 $actualRepositories = @()
+$scanResults = @{}
 $failures = @()
 
 Push-Location $repoRoot
@@ -141,6 +162,7 @@ try {
     }
 
     $scan = Get-Content $report -Raw | ConvertFrom-Json
+    $scanResults[$repository.id] = $scan
     $actual = [ordered]@{
       id = $repository.id
       testFiles = $scan.summary.scannedFiles
@@ -193,6 +215,82 @@ try {
   Pop-Location
 }
 
+$truePositive = 0
+$falseNegative = 0
+$trueNegative = 0
+$falsePositive = 0
+$caseFailures = @()
+foreach ($case in $reviewed.cases) {
+  $scan = $scanResults[$case.repository]
+  if ($null -eq $scan) {
+    $caseFailures += "$($case.id): repository report is missing"
+    continue
+  }
+  $detected = Test-ReviewedFinding -Findings $scan.findings -Case $case
+  if ($case.expected -eq "finding") {
+    if ($detected) {
+      $truePositive += 1
+    } else {
+      $falseNegative += 1
+      $caseFailures += "$($case.id): expected finding was not detected"
+    }
+  } elseif ($case.expected -eq "no-finding") {
+    if ($detected) {
+      $falsePositive += 1
+      $caseFailures += "$($case.id): unexpected finding was reported"
+    } else {
+      $trueNegative += 1
+    }
+  } else {
+    $caseFailures += "$($case.id): unsupported expectation '$($case.expected)'"
+  }
+}
+
+$precisionDenominator = $truePositive + $falsePositive
+$recallDenominator = $truePositive + $falseNegative
+$specificityDenominator = $trueNegative + $falsePositive
+$precision = if ($precisionDenominator -gt 0) {
+  [Math]::Round(100 * $truePositive / $precisionDenominator, 2)
+} else {
+  0
+}
+$recall = if ($recallDenominator -gt 0) {
+  [Math]::Round(100 * $truePositive / $recallDenominator, 2)
+} else {
+  0
+}
+$specificity = if ($specificityDenominator -gt 0) {
+  [Math]::Round(100 * $trueNegative / $specificityDenominator, 2)
+} else {
+  0
+}
+
+$reviewedSummary = [ordered]@{
+  truePositive = $truePositive
+  falsePositive = $falsePositive
+  trueNegative = $trueNegative
+  falseNegative = $falseNegative
+  precisionPercent = $precision
+  recallPercent = $recall
+  specificityPercent = $specificity
+}
+$reviewedSummary |
+  ConvertTo-Json -Depth 4 |
+  Set-Content -Path (Join-Path $reportRoot "reviewed-summary.json") -Encoding utf8
+
+$reviewedLine =
+  "REVIEWED: precision={0}% recall={1}% specificity={2}% " +
+  "(TP={3}, FP={4}, TN={5}, FN={6})"
+$reviewedLine = $reviewedLine -f
+  $precision,
+  $recall,
+  $specificity,
+  $truePositive,
+  $falsePositive,
+  $trueNegative,
+  $falseNegative
+Write-Host $reviewedLine
+
 $totalTestFiles = (
   $actualRepositories |
     ForEach-Object { $_.testFiles } |
@@ -237,6 +335,11 @@ if ($UpdateBaseline) {
     ConvertTo-Json -Depth 8 |
     Set-Content -Path $baselinePath -Encoding utf8
   Write-Host "Updated $baselinePath"
-} elseif ($failures.Count -gt 0) {
-  throw "Precision baseline changed:`n$($failures -join "`n")"
+}
+if ($caseFailures.Count -gt 0) {
+  throw "Reviewed cases changed:`n$($caseFailures -join "`n")"
+}
+if (-not $UpdateBaseline -and $failures.Count -gt 0) {
+  $allFailures = @($failures) + @($caseFailures)
+  throw "Precision benchmark changed:`n$($allFailures -join "`n")"
 }
