@@ -2,7 +2,11 @@
 package "kobe108/moonhermetic"
 
 // Values
+pub fn audit_suppressions(String, String, String) -> Array[SuppressionAudit]
+
 pub fn count_by_severity(ScanReport, Severity) -> Int
+
+pub fn count_suppression_status(SuppressionAuditReport, SuppressionStatus) -> Int
 
 pub fn default_scan_options() -> ScanOptions
 
@@ -10,9 +14,13 @@ pub fn default_severity(RuleKind) -> Severity
 
 pub fn filter_findings(Array[Finding], DiffFilter) -> Array[Finding]
 
+pub fn has_suppression_errors(SuppressionAuditReport) -> Bool
+
 pub fn make_filtered_report(Int, Array[Finding], Int) -> ScanReport
 
 pub fn make_report(Int, Array[Finding]) -> ScanReport
+
+pub fn make_suppression_audit_report(Int, String, Array[SuppressionAudit]) -> SuppressionAuditReport
 
 pub fn parse_unified_diff(String) -> DiffFilter raise DiffParseError
 
@@ -21,6 +29,10 @@ pub fn render_json(ScanReport) -> String
 pub fn render_markdown(ScanReport) -> String
 
 pub fn render_sarif(ScanReport) -> String
+
+pub fn render_suppression_audit_json(SuppressionAuditReport) -> String
+
+pub fn render_suppression_audit_text(SuppressionAuditReport) -> String
 
 pub fn render_text(ScanReport) -> String
 
@@ -105,6 +117,37 @@ pub fn Severity::equal(Self, Self) -> Bool
 pub fn Severity::not_equal(Self, Self) -> Bool
 pub fn Severity::to_string(Self) -> String
 pub impl Eq for Severity
+
+pub(all) struct SuppressionAudit {
+  path : String
+  line : Int
+  column : Int
+  directive : String
+  rules : Array[String]
+  owner : String?
+  expires : String?
+  reason : String?
+  status : SuppressionStatus
+  message : String
+}
+
+pub(all) struct SuppressionAuditReport {
+  scanned_files : Int
+  today : String
+  audits : Array[SuppressionAudit]
+}
+
+pub(all) enum SuppressionStatus {
+  Active
+  ExpiringSoon
+  Expired
+  Legacy
+  Invalid
+}
+pub fn SuppressionStatus::equal(Self, Self) -> Bool
+pub fn SuppressionStatus::not_equal(Self, Self) -> Bool
+pub fn SuppressionStatus::to_string(Self) -> String
+pub impl Eq for SuppressionStatus
 
 // Type aliases
 

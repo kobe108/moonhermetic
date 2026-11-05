@@ -29,6 +29,8 @@ location and a concrete remediation before the test is executed.
   locations.
 - Rule-specific inline suppression with owners, expiry dates, and
   `// hermetic:ignore-next`.
+- Suppression governance reports for active, expiring, expired, legacy, and
+  invalid directives.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -72,6 +74,8 @@ moonhermetic [options] [file-or-directory ...]
       --config <path>
       --no-config
       --diff <path>
+      --audit-suppressions
+      --fail-on-suppression
       --exclude <text>
       --rules
   -h, --help
@@ -163,6 +167,37 @@ and the original finding reappears.
 Inline suppression stays local. Rule disabling is explicit in the versioned
 config file, so policy changes remain reviewable.
 
+## Suppression governance
+
+Use `--audit-suppressions` to review every directive without changing the
+normal finding behavior:
+
+```bash
+moon run cmd/main -- . --audit-suppressions
+moon run cmd/main -- . --audit-suppressions --format json
+```
+
+The report groups directives as:
+
+- `active`: expires more than 30 days after the scan date.
+- `expiring-soon`: expires within the next 30 days, including today.
+- `expired`: the expiry date is already in the past.
+- `legacy`: a blanket `hermetic:ignore: ...` directive without governance
+  metadata.
+- `invalid`: a scoped directive with a missing, unknown, or malformed field.
+
+An ordinary audit exits successfully even when it finds expired or invalid
+directives. For a CI gate, use:
+
+```bash
+moon run cmd/main -- . --fail-on-suppression
+```
+
+This enables the audit and exits with code 1 when any scoped directive is
+expired or invalid. Legacy directives remain visible but do not fail this
+optional gate. Strings, block comments, and snapshot content are ignored when
+collecting directives.
+
 ## GitHub Actions
 
 ```yaml
@@ -180,6 +215,9 @@ config file, so policy changes remain reviewable.
   uses: github/codeql-action/upload-sarif@v4
   with:
     sarif_file: moonhermetic.sarif
+
+- name: Suppression governance
+  run: moon run cmd/main -- . --exclude examples --fail-on-suppression
 ```
 
 The repository's own workflow runs `moon check`, `moon test`, the scanner, and
@@ -198,6 +236,18 @@ let findings = @moonhermetic.scan_source_with_options_and_date(
 )
 let report = @moonhermetic.make_report(1, findings)
 println(@moonhermetic.render_markdown(report))
+
+let audits = @moonhermetic.audit_suppressions(
+  "billing_test.mbt",
+  source,
+  "2026-11-05",
+)
+let governance = @moonhermetic.make_suppression_audit_report(
+  1,
+  "2026-11-05",
+  audits,
+)
+println(@moonhermetic.render_suppression_audit_json(governance))
 ```
 
 ## Roadmap

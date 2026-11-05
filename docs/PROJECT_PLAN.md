@@ -42,6 +42,7 @@ history-based flake score.
 - [x] Example vulnerable and safe files.
 - [x] Add configurable rule severity and project exclusions.
 - [x] Add rule-specific suppressions with owner and expiry metadata.
+- [x] Add governance audits and an optional expired-suppression CI gate.
 
 ### Week 3: ecosystem validation
 
@@ -66,6 +67,8 @@ history-based flake score.
   matching finding.
 - Every output format parses or renders according to its specification.
 - Ignore directives do not hide unrelated lines.
+- Governance reports distinguish active, expiring, expired, legacy, and
+  invalid directives.
 - Documentation does not claim complete detection; rules are explicitly
   heuristic and review-oriented.
 

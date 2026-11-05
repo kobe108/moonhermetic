@@ -42,6 +42,9 @@ jobs:
         run: |
           moon run cmd/main -- . --exclude examples --format sarif --fail-on error | Out-File -Encoding utf8 moonhermetic.sarif
 
+      - name: Suppression governance
+        run: moon run cmd/main -- . --exclude examples --fail-on-suppression
+
       - name: Upload SARIF
         if: always()
         uses: actions/upload-artifact@v5

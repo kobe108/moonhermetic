@@ -67,3 +67,21 @@ fetch("https://example.test") // hermetic:ignore HERM-NET owner=kobe108 expires=
 `ignore-next` uses the same syntax. Expiration is inclusive: the directive
 remains active through the ISO date in `expires`. Expired, incomplete, or
 malformed directives fail open, so the original finding is reported.
+
+## Suppression governance
+
+Run `--audit-suppressions` to review all directives without changing scanner
+results. Governance states are:
+
+| State | Meaning |
+|---|---|
+| `active` | More than 30 days remain before expiry. |
+| `expiring-soon` | Between 0 and 30 days remain, including today. |
+| `expired` | The expiry date was before the scan date. |
+| `legacy` | A blanket directive without owner or expiry metadata. |
+| `invalid` | A scoped directive has missing, unknown, or malformed fields. |
+
+The audit ignores directive-like text inside strings, nested block comments,
+and snapshot content. Use `--fail-on-suppression` in CI to reject expired or
+invalid scoped directives. The gate does not change the fail-open behavior of
+the ordinary scanner because the two modes serve different policies.

@@ -36,10 +36,13 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
 - 注释、字符串、字符、块注释和快照内容屏蔽，减少假阳性。
 - 文件、行、列和原始证据定位。
 - 支持按规则 ID、负责人和过期日期管理的局部豁免。
+- 汇总 active、30 天内到期、已过期、legacy 和 invalid 五类豁免状态，并可在
+  CI 中单独拦截已过期或格式错误的 scoped 豁免。
 - Text、JSON、Markdown、SARIF 2.1.0 输出。
 - 可配置 CI 失败阈值。
 - 通过 `.moonhermetic.json` 按规则关闭、调整严重级别并设置排除路径。
 - 通过 unified diff 只报告 PR 新增行引入的问题。
+- 通过治理报告检查豁免负责人、用途和到期时间，避免永久性“临时例外”。
 - 使用 10 个固定公开仓库和 531 个测试文件建立规则回归基准。
 - 使用 14 个正例和 5 个负例计算 reviewed precision、recall 和 specificity。
 - 使用固定 seed 的 SHA-256 分层抽样生成 20 条可重复审查样本。
@@ -72,6 +75,14 @@ moon run cmd/main -- examples/risky --format sarif --fail-on never
 ```
 
 预期结果：生成可导入 GitHub Code Scanning 的 SARIF 2.1.0。
+
+```bash
+moon run cmd/main -- examples/suppressions --audit-suppressions
+moon run cmd/main -- examples/suppressions --fail-on-suppression
+```
+
+预期结果：第一条命令展示 active 和 expired 状态并以 0 退出；第二条在发现
+过期豁免时以 1 退出，可直接作为 CI 治理门禁。
 
 ## 验收证据
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.0
+
+- Add a suppression governance audit for active, expiring, expired, legacy,
+  and invalid directives.
+- Add deterministic text and JSON audit reports with owner, expiry, reason,
+  rule, and source location metadata.
+- Add `--audit-suppressions` to inspect governance state without changing scan
+  behavior.
+- Add `--fail-on-suppression` for CI gates that reject expired or malformed
+  scoped suppressions.
+- Keep expired suppressions fail-open for findings unless the separate
+  governance gate is enabled.
+- Ignore directive-like text in strings, block comments, and snapshot content.
+
 ## 0.6.0
 
 - Add deterministic SHA-256 stratified sampling across corpus rules.

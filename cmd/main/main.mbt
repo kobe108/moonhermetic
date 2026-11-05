@@ -13,6 +13,8 @@ let usage_text =
   #|      --config <path>                Read project config (default: .moonhermetic.json)
   #|      --no-config                     Disable config discovery
   #|      --diff <path>                   Only report findings on added unified-diff lines
+  #|      --audit-suppressions           Report suppression ownership and expiry state
+  #|      --fail-on-suppression          Exit 1 for expired or invalid suppressions
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
   #|  -h, --help                          Show this help
@@ -25,7 +27,7 @@ let usage_text =
   #|
   #|Exit codes:
   #|  0  Scan completed without reaching the fail threshold
-  #|  1  A finding reached the fail threshold
+  #|  1  A finding reached the fail threshold, or suppression governance failed
   #|  2  Invalid arguments or file I/O failure
 
 ///|
@@ -136,7 +138,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.6.0")
+        println("moonhermetic 0.7.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -201,6 +203,8 @@ fn main {
     None => "error"
   }
   let mut diff_path : String? = None
+  let mut audit_suppressions = false
+  let mut fail_on_suppression = false
   let mut index = 1
   while index < args.length() {
     let arg = args[index]
@@ -237,6 +241,8 @@ fn main {
         diff_path = Some(require_value(args, index, arg))
         index = index + 1
       }
+      "--audit-suppressions" => audit_suppressions = true
+      "--fail-on-suppression" => fail_on_suppression = true
       "--exclude" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -257,6 +263,26 @@ fn main {
     index = index + 1
   }
 
+  if fail_on_suppression {
+    audit_suppressions = true
+  }
+  if audit_suppressions {
+    match diff_path {
+      Some(_) => {
+        print_error("--audit-suppressions cannot be combined with --diff")
+        @sys.exit(2)
+      }
+      None => ()
+    }
+    match format {
+      "text" | "json" => ()
+      _ => {
+        print_error("suppression audit supports only text or json output")
+        @sys.exit(2)
+      }
+    }
+  }
+
   if inputs.is_empty() {
     inputs.push(".")
   }
@@ -269,6 +295,7 @@ fn main {
   files.sort()
 
   let findings = []
+  let audits = []
   let scan_date = current_utc_date()
   for file in files {
     let source = @fs.read_file_to_string(file) catch {
@@ -278,56 +305,78 @@ fn main {
         abort("unreachable after I/O error")
       }
     }
-    for
-      finding in @lib.scan_source_with_options_and_date(
-        file,
-        source,
-        config.options,
-        scan_date,
-      ) {
-      findings.push(finding)
+    if audit_suppressions {
+      for audit in @lib.audit_suppressions(file, source, scan_date) {
+        audits.push(audit)
+      }
+    } else {
+      for
+        finding in @lib.scan_source_with_options_and_date(
+          file,
+          source,
+          config.options,
+          scan_date,
+        ) {
+        findings.push(finding)
+      }
     }
   }
 
-  let report = match diff_path {
-    None => @lib.make_report(files.length(), findings)
-    Some(path) => {
-      let patch = @fs.read_file_to_string(path) catch {
-        @fs.IOError(message) => {
-          print_error("cannot read diff '\{path}': \{message}")
-          @sys.exit(2)
-          abort("unreachable after I/O error")
-        }
-      }
-      let filter = @lib.parse_unified_diff(patch) catch {
-        @lib.DiffParseError(message) => {
-          print_error("cannot parse diff '\{path}': \{message}")
-          @sys.exit(2)
-          abort("unreachable after invalid diff")
-        }
-      }
-      let filtered = @lib.filter_findings(findings, filter)
-      @lib.make_filtered_report(
-        files.length(),
-        filtered,
-        findings.length() - filtered.length(),
-      )
+  if audit_suppressions {
+    let audit_report = @lib.make_suppression_audit_report(
+      files.length(),
+      scan_date,
+      audits,
+    )
+    let output = match format {
+      "json" => @lib.render_suppression_audit_json(audit_report)
+      _ => @lib.render_suppression_audit_text(audit_report)
     }
-  }
-  let output = match format {
-    "json" => @lib.render_json(report)
-    "markdown" | "md" => @lib.render_markdown(report)
-    "sarif" => @lib.render_sarif(report)
-    _ => @lib.render_text(report)
-  }
-  println(output)
+    println(output)
+    if fail_on_suppression && @lib.has_suppression_errors(audit_report) {
+      @sys.exit(1)
+    }
+  } else {
+    let report = match diff_path {
+      None => @lib.make_report(files.length(), findings)
+      Some(path) => {
+        let patch = @fs.read_file_to_string(path) catch {
+          @fs.IOError(message) => {
+            print_error("cannot read diff '\{path}': \{message}")
+            @sys.exit(2)
+            abort("unreachable after I/O error")
+          }
+        }
+        let filter = @lib.parse_unified_diff(patch) catch {
+          @lib.DiffParseError(message) => {
+            print_error("cannot parse diff '\{path}': \{message}")
+            @sys.exit(2)
+            abort("unreachable after invalid diff")
+          }
+        }
+        let filtered = @lib.filter_findings(findings, filter)
+        @lib.make_filtered_report(
+          files.length(),
+          filtered,
+          findings.length() - filtered.length(),
+        )
+      }
+    }
+    let output = match format {
+      "json" => @lib.render_json(report)
+      "markdown" | "md" => @lib.render_markdown(report)
+      "sarif" => @lib.render_sarif(report)
+      _ => @lib.render_text(report)
+    }
+    println(output)
 
-  let failed = match fail_on {
-    "never" => false
-    "warning" => @lib.should_fail(report, @lib.Warning)
-    _ => @lib.should_fail(report, @lib.Error)
-  }
-  if failed {
-    @sys.exit(1)
+    let failed = match fail_on {
+      "never" => false
+      "warning" => @lib.should_fail(report, @lib.Warning)
+      _ => @lib.should_fail(report, @lib.Error)
+    }
+    if failed {
+      @sys.exit(1)
+    }
   }
 }
