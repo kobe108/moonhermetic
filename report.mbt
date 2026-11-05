@@ -35,6 +35,11 @@ pub fn render_text(report : ScanReport) -> String {
     "MoonHermetic scanned \{report.scanned_files} test file(s): " +
     "\{report.findings.length()} finding(s), \{errors} error(s), \{warnings} warning(s).\n",
   )
+  if report.filtered_out > 0 {
+    out.write_string(
+      "Diff filter ignored \{report.filtered_out} finding(s) outside changed lines.\n",
+    )
+  }
   out.to_string()
 }
 
@@ -45,13 +50,14 @@ pub fn render_json(report : ScanReport) -> String {
     "schema": Json::string("moonhermetic/v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.3.0"),
+      "version": Json::string("0.4.0"),
     }),
     "summary": Json::object({
       "scannedFiles": Json::number(report.scanned_files.to_double()),
       "findings": Json::number(report.findings.length().to_double()),
       "errors": Json::number(count_by_severity(report, Error).to_double()),
       "warnings": Json::number(count_by_severity(report, Warning).to_double()),
+      "filteredOut": Json::number(report.filtered_out.to_double()),
     }),
     "findings": Json::array(report.findings.map(finding_to_json)),
   }).stringify(indent=2)
@@ -74,6 +80,11 @@ pub fn render_markdown(report : ScanReport) -> String {
     "Scanned **\{report.scanned_files}** test file(s); found " +
     "**\{report.findings.length()}** implicit dependency finding(s).\n\n",
   )
+  if report.filtered_out > 0 {
+    out.write_string(
+      "\{report.filtered_out} finding(s) outside changed lines were filtered out.\n\n",
+    )
+  }
   if report.findings.length() == 0 {
     out.write_string("No hermeticity risks detected.\n")
     return out.to_string()
@@ -146,7 +157,7 @@ pub fn render_sarif(report : ScanReport) -> String {
         "tool": Json::object({
           "driver": Json::object({
             "name": Json::string("MoonHermetic"),
-            "version": Json::string("0.3.0"),
+            "version": Json::string("0.4.0"),
             "informationUri": Json::string(
               "https://github.com/kobe108/moonhermetic",
             ),

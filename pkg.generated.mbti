@@ -8,7 +8,13 @@ pub fn default_scan_options() -> ScanOptions
 
 pub fn default_severity(RuleKind) -> Severity
 
+pub fn filter_findings(Array[Finding], DiffFilter) -> Array[Finding]
+
+pub fn make_filtered_report(Int, Array[Finding], Int) -> ScanReport
+
 pub fn make_report(Int, Array[Finding]) -> ScanReport
+
+pub fn parse_unified_diff(String) -> DiffFilter raise DiffParseError
 
 pub fn render_json(ScanReport) -> String
 
@@ -33,8 +39,21 @@ pub fn scan_source_with_options_and_date(String, String, ScanOptions, String) ->
 pub fn should_fail(ScanReport, Severity) -> Bool
 
 // Errors
+pub(all) suberror DiffParseError {
+  DiffParseError(String)
+}
 
 // Types and methods
+pub(all) struct ChangedFile {
+  path : String
+  lines : Array[Int]
+}
+
+pub(all) struct DiffFilter {
+  files : Array[ChangedFile]
+}
+pub fn DiffFilter::includes(Self, String, Int) -> Bool
+
 pub(all) struct Finding {
   path : String
   line : Int
@@ -75,6 +94,7 @@ pub(all) struct ScanOptions {
 pub(all) struct ScanReport {
   scanned_files : Int
   findings : Array[Finding]
+  filtered_out : Int
 }
 
 pub(all) enum Severity {

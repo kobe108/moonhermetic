@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Add unified-diff parsing for pull-request incremental scans.
+- Filter findings to added lines while reporting how many were filtered.
+- Match absolute scanner paths against repository-relative diff paths.
+- Add an end-to-end incremental scan example.
+
 ## 0.3.0
 
 - Add rule-specific same-line and next-line suppression.

@@ -72,3 +72,18 @@ test "sarif report contains rule and source location" {
   assert_true(sarif.contains("\"startLine\": 3"))
   guard json is Object(_) else { fail("SARIF root must be an object") }
 }
+
+///|
+test "filtered report exposes the omitted finding count" {
+  let report = @moonhermetic.make_filtered_report(
+    1,
+    [sample_finding(@moonhermetic.Network)],
+    2,
+  )
+  let text = @moonhermetic.render_text(report)
+  let markdown = @moonhermetic.render_markdown(report)
+  let json = @moonhermetic.render_json(report)
+  assert_true(text.contains("ignored 2 finding(s)"))
+  assert_true(markdown.contains("2 finding(s) outside changed lines"))
+  assert_true(json.contains("\"filteredOut\": 2"))
+}

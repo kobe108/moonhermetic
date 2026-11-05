@@ -12,6 +12,7 @@ let usage_text =
   #|                                      Exit non-zero at this severity (default: error)
   #|      --config <path>                Read project config (default: .moonhermetic.json)
   #|      --no-config                     Disable config discovery
+  #|      --diff <path>                   Only report findings on added unified-diff lines
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
   #|  -h, --help                          Show this help
@@ -135,7 +136,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.3.0")
+        println("moonhermetic 0.4.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -199,6 +200,7 @@ fn main {
     Some(value) => value
     None => "error"
   }
+  let mut diff_path : String? = None
   let mut index = 1
   while index < args.length() {
     let arg = args[index]
@@ -231,6 +233,10 @@ fn main {
       }
       "--config" => index = index + 1
       "--no-config" => ()
+      "--diff" => {
+        diff_path = Some(require_value(args, index, arg))
+        index = index + 1
+      }
       "--exclude" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -283,7 +289,31 @@ fn main {
     }
   }
 
-  let report = @lib.make_report(files.length(), findings)
+  let report = match diff_path {
+    None => @lib.make_report(files.length(), findings)
+    Some(path) => {
+      let patch = @fs.read_file_to_string(path) catch {
+        @fs.IOError(message) => {
+          print_error("cannot read diff '\{path}': \{message}")
+          @sys.exit(2)
+          abort("unreachable after I/O error")
+        }
+      }
+      let filter = @lib.parse_unified_diff(patch) catch {
+        @lib.DiffParseError(message) => {
+          print_error("cannot parse diff '\{path}': \{message}")
+          @sys.exit(2)
+          abort("unreachable after invalid diff")
+        }
+      }
+      let filtered = @lib.filter_findings(findings, filter)
+      @lib.make_filtered_report(
+        files.length(),
+        filtered,
+        findings.length() - filtered.length(),
+      )
+    }
+  }
   let output = match format {
     "json" => @lib.render_json(report)
     "markdown" | "md" => @lib.render_markdown(report)

@@ -1,0 +1,12 @@
+diff --git a/examples/risky/checkout_test.mbt b/examples/risky/checkout_test.mbt
+index 1111111..2222222 100644
+--- a/examples/risky/checkout_test.mbt
++++ b/examples/risky/checkout_test.mbt
+@@ -17,6 +17,6 @@
+ test "risky checkout" {
+   let started = current_time()
+   let endpoint = "https://example.test/checkout"
++  let response = fetch(endpoint)
+   sleep(20)
+   assert_true(response.length() > started)
+ }

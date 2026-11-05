@@ -31,6 +31,7 @@ location and a concrete remediation before the test is executed.
   `// hermetic:ignore-next`.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
+- Unified-diff mode that reports only findings introduced on changed lines.
 - Text, JSON, Markdown, and SARIF 2.1.0 output.
 - CI-friendly exit codes and deterministic file traversal.
 - No opinionated test-replacement framework: it points to the boundary that
@@ -67,6 +68,7 @@ moonhermetic [options] [file-or-directory ...]
       --fail-on <never|warning|error>
       --config <path>
       --no-config
+      --diff <path>
       --exclude <text>
       --rules
   -h, --help
@@ -103,6 +105,22 @@ policy cannot silently pass CI.
 
 A complete example is available at
 [`examples/moonhermetic.example.json`](examples/moonhermetic.example.json).
+
+## Pull-request diff mode
+
+Generate a unified diff in CI and pass it with `--diff`. MoonHermetic still
+scans the complete test files so it can resolve findings correctly, but only
+reports findings whose source line appears as an added line in the patch.
+
+```bash
+git diff --unified=0 "$BASE_SHA...HEAD" -- '*.mbt' > moonhermetic.diff
+moon run cmd/main -- . --diff moonhermetic.diff --fail-on warning
+```
+
+Findings outside the patch are counted in `summary.filteredOut` and omitted
+from text, Markdown, and SARIF output. Deleted lines do not count as changed
+lines. A demo patch is available at
+[`examples/changes.diff`](examples/changes.diff).
 
 ## Rules
 
@@ -146,8 +164,11 @@ config file, so policy changes remain reviewable.
 
 ```yaml
 - name: Hermeticity audit
+  env:
+    BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
   run: |
-    moon run cmd/main -- . --exclude examples \
+    git diff --unified=0 "$BASE_SHA" "$GITHUB_SHA" -- '*.mbt' > moonhermetic.diff
+    moon run cmd/main -- . --diff moonhermetic.diff \
       --format sarif \
       --fail-on error > moonhermetic.sarif
 
@@ -178,7 +199,6 @@ println(@moonhermetic.render_markdown(report))
 
 ## Roadmap
 
-- Add diff-aware mode for pull requests.
 - Add precision fixtures from real MoonBit projects.
 - Ship signed native binaries and a reusable GitHub Action.
 

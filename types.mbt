@@ -61,6 +61,7 @@ pub(all) struct Finding {
 pub(all) struct ScanReport {
   scanned_files : Int
   findings : Array[Finding]
+  filtered_out : Int
 }
 
 ///|

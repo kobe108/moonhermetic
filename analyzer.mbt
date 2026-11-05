@@ -411,7 +411,17 @@ pub fn make_report(
   scanned_files : Int,
   findings : Array[Finding],
 ) -> ScanReport {
-  { scanned_files, findings, }
+  { scanned_files, findings, filtered_out: 0, }
+}
+
+///|
+/// Build a report after diff-aware filtering.
+pub fn make_filtered_report(
+  scanned_files : Int,
+  findings : Array[Finding],
+  filtered_out : Int,
+) -> ScanReport {
+  { scanned_files, findings, filtered_out, }
 }
 
 ///|
