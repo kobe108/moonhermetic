@@ -56,6 +56,10 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
+    - name: Update MoonBit registry
+      shell: bash
+      run: moon update
+
     - name: Run MoonHermetic
       id: moonhermetic
       shell: bash
