@@ -38,10 +38,12 @@ jobs:
           fail-on: warning
           output-file: ${{ runner.temp }}/moonhermetic-action.txt
 
-      - name: Verify job summary
+      - name: Verify generated summary
         shell: bash
+        env:
+          SUMMARY_PATH: ${{ steps.moonhermetic.outputs.summary-path }}
         run: |
-          node -e 'const fs = require("node:fs"); const text = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, "utf8"); if (!text.includes("# MoonHermetic report")) process.exit(1)'
+          node -e 'const fs = require("node:fs"); const text = fs.readFileSync(process.env.SUMMARY_PATH, "utf8"); if (!text.includes("# MoonHermetic report")) process.exit(1)'
 
       - name: Verify the action report
         shell: bash
