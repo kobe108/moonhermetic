@@ -1,6 +1,6 @@
 name = "kobe108/moonhermetic"
 
-version = "0.9.0"
+version = "0.10.0"
 
 readme = "README.md"
 
@@ -8,7 +8,15 @@ repository = "https://github.com/kobe108/moonhermetic"
 
 license = "Apache-2.0"
 
-keywords = [ "testing", "lint", "deterministic", "ci", "moonbit" ]
+keywords = [
+  "testing",
+  "lint",
+  "deterministic",
+  "hermeticity",
+  "flaky-tests",
+  "ci",
+  "moonbit",
+]
 
 preferred_target = "native"
 

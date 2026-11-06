@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.10.0
+
+- Add a Mooncakes publication workflow with a token-free package preflight.
+- Validate package archives without requiring an external ZIP or tar command.
+- Reject incomplete packages, path traversal, build directories, and secret
+  filenames before publication.
+- Publish the validated Mooncakes ZIP and its SHA-256 checksum as release
+  assets.
+- Require an isolated `kobe108` Mooncakes identity and reject credentials from
+  other usernames.
+- Expand Mooncakes discovery metadata.
+
 ## 0.9.0
 
 - Build and publish native MoonHermetic executables for Linux, macOS, and

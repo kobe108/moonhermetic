@@ -3,7 +3,7 @@
 MoonHermetic can run as a composite GitHub Action. The caller does not need to
 copy an executable or MoonHermetic source into the repository.
 
-For version tags such as `v0.9.0`, the Action downloads the matching Linux,
+For version tags such as `v0.10.0`, the Action downloads the matching Linux,
 macOS, or Windows binary and verifies its SHA-256 checksum before execution.
 Branch refs, local `uses: ./` checks, and unsupported runner architectures
 fall back to installing MoonBit and running the pinned source.
@@ -11,7 +11,7 @@ fall back to installing MoonBit and running the pinned source.
 Pin the action to a release tag or commit SHA:
 
 ```yaml
-- uses: kobe108/moonhermetic@v0.9.0
+- uses: kobe108/moonhermetic@v0.10.0
 ```
 
 ## Scan and upload SARIF
@@ -33,7 +33,7 @@ jobs:
 
       - name: MoonHermetic
         id: hermetic
-        uses: kobe108/moonhermetic@v0.9.0
+        uses: kobe108/moonhermetic@v0.10.0
         with:
           path: .
           format: sarif
@@ -64,7 +64,7 @@ Generate a unified diff before invoking the Action:
       > "$RUNNER_TEMP/moonhermetic.diff"
 
 - name: MoonHermetic changed lines
-  uses: kobe108/moonhermetic@v0.9.0
+  uses: kobe108/moonhermetic@v0.10.0
   with:
     diff: ${{ runner.temp }}/moonhermetic.diff
     format: markdown
@@ -79,7 +79,7 @@ Audit ownership and expiry without failing:
 
 ```yaml
 - name: Suppression audit
-  uses: kobe108/moonhermetic@v0.9.0
+  uses: kobe108/moonhermetic@v0.10.0
   with:
     audit-suppressions: true
     output-file: moonhermetic-suppressions.json
@@ -89,7 +89,7 @@ Enable the CI gate:
 
 ```yaml
 - name: Reject expired suppressions
-  uses: kobe108/moonhermetic@v0.9.0
+  uses: kobe108/moonhermetic@v0.10.0
   with:
     fail-on-suppression: true
 ```

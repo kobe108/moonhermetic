@@ -1,0 +1,65 @@
+name: Publish Mooncakes package
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing vX.Y.Z tag to publish
+        required: true
+        type: string
+      publish:
+        description: Publish to Mooncakes instead of only running a dry run
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mooncakes-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Set up MoonBit
+        uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update MoonBit registry
+        run: moon update
+
+      - name: Verify project
+        run: |
+          moon check --target all --deny-warn
+          moon test
+
+      - name: Build package
+        run: moon package --list
+
+      - name: Validate package contents
+        run: node scripts/validate-package.mjs
+
+      - name: Configure kobe108 Mooncakes credentials
+        if: inputs.publish
+        env:
+          MOONCAKES_USERNAME: kobe108
+          MOONCAKES_TOKEN: ${{ secrets.MOONCAKES_TOKEN }}
+        run: node scripts/configure-mooncakes-credential.mjs
+
+      - name: Mooncakes dry run
+        if: inputs.publish
+        run: moon publish --dry-run
+
+      - name: Publish to Mooncakes
+        if: inputs.publish
+        run: moon publish

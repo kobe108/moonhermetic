@@ -21,8 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Test action input planning
-        run: node --test tests/action-runner.test.mjs
+      - name: Test release tooling
+        run: >-
+          node --test
+          tests/action-binary.test.mjs
+          tests/action-runner.test.mjs
+          tests/package.test.mjs
 
       - name: Run the reusable action
         id: moonhermetic

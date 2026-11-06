@@ -33,6 +33,7 @@ location and a concrete remediation before the test is executed.
   invalid directives.
 - A reusable GitHub Action with cross-platform smoke coverage.
 - Checksum-verified native binaries for Linux, macOS, and Windows releases.
+- Validated Mooncakes package assets and a guarded publication workflow.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -54,6 +55,12 @@ cd moonhermetic
 moon check
 moon test
 moon run cmd/main -- . --fail-on warning
+```
+
+Published Mooncakes releases can be added without cloning the repository:
+
+```bash
+moon add kobe108/moonhermetic
 ```
 
 Example output:
@@ -217,7 +224,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.9.0
+    uses: kobe108/moonhermetic@v0.10.0
     with:
       path: .
       format: sarif
@@ -238,7 +245,8 @@ governance gate, and artifact uploads.
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.9.0-linux-x86_64`.
+`moonhermetic-v0.10.0-linux-x86_64`. Each release also includes a validated
+Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
 
@@ -317,6 +325,7 @@ See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the one-month delivery
 plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
 guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/RELEASES.md](docs/RELEASES.md) for native binary publishing and
+[docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.
 

@@ -57,6 +57,7 @@ history-based flake score.
 
 - [x] Add release binaries for Windows, Linux, and macOS.
 - [x] Publish a reusable GitHub Action.
+- [x] Add Mooncakes package validation and a guarded publication workflow.
 - [ ] Publish the library to Mooncakes.
 - [ ] Complete API docs, changelog, and demo recording.
 
