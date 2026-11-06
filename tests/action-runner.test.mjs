@@ -73,11 +73,17 @@ test("path diff excludes and stdout output are forwarded safely", () => {
   const result = plan({
     INPUT_PATH: "tests",
     INPUT_DIFF: "changes.diff",
+    INPUT_BASELINE: "config/moonhermetic-baseline.json",
     INPUT_EXCLUDE: "vendor\ngenerated",
     INPUT_OUTPUT_FILE: "-",
   });
   assert.ok(result.args.includes(path.join(workspace, "tests")));
   assert.ok(result.args.includes(path.join(workspace, "changes.diff")));
+  assert.ok(
+    result.args.includes(
+      path.join(workspace, "config", "moonhermetic-baseline.json"),
+    ),
+  );
   assert.ok(result.args.includes("vendor"));
   assert.ok(result.args.includes("generated"));
   assert.equal(result.outputPath, null);

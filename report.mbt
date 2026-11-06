@@ -40,6 +40,17 @@ pub fn render_text(report : ScanReport) -> String {
       "Diff filter ignored \{report.filtered_out} finding(s) outside changed lines.\n",
     )
   }
+  if report.baseline_suppressed > 0 {
+    out.write_string(
+      "Baseline accepted \{report.baseline_suppressed} existing finding(s).\n",
+    )
+  }
+  if report.baseline_stale > 0 {
+    out.write_string(
+      "Baseline contains \{report.baseline_stale} stale count(s); " +
+      "regenerate it to keep the file current.\n",
+    )
+  }
   out.to_string()
 }
 
@@ -50,7 +61,7 @@ pub fn render_json(report : ScanReport) -> String {
     "schema": Json::string("moonhermetic/v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.11.0"),
+      "version": Json::string("0.12.0"),
     }),
     "summary": Json::object({
       "scannedFiles": Json::number(report.scanned_files.to_double()),
@@ -58,6 +69,12 @@ pub fn render_json(report : ScanReport) -> String {
       "errors": Json::number(count_by_severity(report, Error).to_double()),
       "warnings": Json::number(count_by_severity(report, Warning).to_double()),
       "filteredOut": Json::number(report.filtered_out.to_double()),
+      "baselineSuppressed": Json::number(report.baseline_suppressed.to_double()),
+      "baselineStale": Json::number(report.baseline_stale.to_double()),
+      "baselinePath": match report.baseline_path {
+        Some(path) => Json::string(path)
+        None => Json::null()
+      },
     }),
     "findings": Json::array(report.findings.map(finding_to_json)),
   }).stringify(indent=2)
@@ -83,6 +100,18 @@ pub fn render_markdown(report : ScanReport) -> String {
   if report.filtered_out > 0 {
     out.write_string(
       "\{report.filtered_out} finding(s) outside changed lines were filtered out.\n\n",
+    )
+  }
+  if report.baseline_suppressed > 0 {
+    out.write_string(
+      "\{report.baseline_suppressed} existing finding(s) were accepted by " +
+      "the baseline.\n\n",
+    )
+  }
+  if report.baseline_stale > 0 {
+    out.write_string(
+      "\{report.baseline_stale} stale baseline count(s) can be removed by " +
+      "regenerating the baseline.\n\n",
     )
   }
   if report.findings.length() == 0 {
@@ -135,6 +164,17 @@ pub fn render_ci_summary(report : ScanReport) -> String {
     out.write_string(
       "\{report.filtered_out} finding(s) outside changed lines were filtered " +
       "out.\n\n",
+    )
+  }
+  if report.baseline_suppressed > 0 {
+    out.write_string(
+      "\{report.baseline_suppressed} existing finding(s) were accepted by " +
+      "the baseline.\n\n",
+    )
+  }
+  if report.baseline_stale > 0 {
+    out.write_string(
+      "\{report.baseline_stale} stale baseline count(s) remain.\n\n",
     )
   }
   if report.findings.length() == 0 {
@@ -219,7 +259,7 @@ pub fn render_sarif(report : ScanReport) -> String {
         "tool": Json::object({
           "driver": Json::object({
             "name": Json::string("MoonHermetic"),
-            "version": Json::string("0.11.0"),
+            "version": Json::string("0.12.0"),
             "informationUri": Json::string(
               "https://github.com/kobe108/moonhermetic",
             ),

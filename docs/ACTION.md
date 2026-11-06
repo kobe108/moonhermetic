@@ -3,7 +3,7 @@
 MoonHermetic can run as a composite GitHub Action. The caller does not need to
 copy an executable or MoonHermetic source into the repository.
 
-For version tags such as `v0.11.0`, the Action downloads the matching Linux,
+For version tags such as `v0.12.0`, the Action downloads the matching Linux,
 macOS, or Windows binary and verifies its SHA-256 checksum before execution.
 Branch refs, local `uses: ./` checks, and unsupported runner architectures
 fall back to installing MoonBit and running the pinned source.
@@ -11,7 +11,7 @@ fall back to installing MoonBit and running the pinned source.
 Pin the action to a release tag or commit SHA:
 
 ```yaml
-- uses: kobe108/moonhermetic@v0.11.0
+- uses: kobe108/moonhermetic@v0.12.0
 ```
 
 ## Scan and upload SARIF
@@ -33,7 +33,7 @@ jobs:
 
       - name: MoonHermetic
         id: hermetic
-        uses: kobe108/moonhermetic@v0.11.0
+        uses: kobe108/moonhermetic@v0.12.0
         with:
           path: .
           format: sarif
@@ -65,7 +65,7 @@ permissions:
   pull-requests: write
 
 # ...
-- uses: kobe108/moonhermetic@v0.11.0
+- uses: kobe108/moonhermetic@v0.12.0
   with:
     format: markdown
     pr-comment: true
@@ -93,14 +93,14 @@ Generate a unified diff before invoking the Action:
       > "$RUNNER_TEMP/moonhermetic.diff"
 
 - name: MoonHermetic changed lines
-  uses: kobe108/moonhermetic@v0.11.0
+  uses: kobe108/moonhermetic@v0.12.0
   with:
     diff: ${{ runner.temp }}/moonhermetic.diff
     format: markdown
 ```
 
-The Action resolves `path`, `config`, `diff`, and `output-file` relative to
-`GITHUB_WORKSPACE` unless they are already absolute.
+The Action resolves `path`, `config`, `baseline`, `diff`, and `output-file`
+relative to `GITHUB_WORKSPACE` unless they are already absolute.
 
 ## Suppression governance
 
@@ -108,7 +108,7 @@ Audit ownership and expiry without failing:
 
 ```yaml
 - name: Suppression audit
-  uses: kobe108/moonhermetic@v0.11.0
+  uses: kobe108/moonhermetic@v0.12.0
   with:
     audit-suppressions: true
     output-file: moonhermetic-suppressions.json
@@ -118,7 +118,7 @@ Enable the CI gate:
 
 ```yaml
 - name: Reject expired suppressions
-  uses: kobe108/moonhermetic@v0.11.0
+  uses: kobe108/moonhermetic@v0.12.0
   with:
     fail-on-suppression: true
 ```
@@ -136,6 +136,7 @@ scoped directives, while legacy directives remain visible and non-fatal.
 | `config` | Auto-discover | Config path relative to the caller's workspace |
 | `exclude` | Empty | Newline-separated path fragments to skip |
 | `diff` | Empty | Unified diff path for changed-line filtering |
+| `baseline` | Empty | Saved baseline path; recorded findings become accepted |
 | `audit-suppressions` | `false` | Produce a suppression governance report |
 | `fail-on-suppression` | `false` | Fail for expired or invalid scoped directives |
 | `output-file` | Automatic | Report path relative to the workspace, or `-` for stdout |

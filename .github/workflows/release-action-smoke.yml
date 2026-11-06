@@ -21,10 +21,11 @@ jobs:
 
       - name: Run released action
         id: moonhermetic
-        uses: kobe108/moonhermetic@v0.11.0
+        uses: kobe108/moonhermetic@v0.12.0
         with:
           path: examples/safe
           format: text
+          baseline: examples/safe-baseline.json
           output-file: ${{ runner.temp }}/moonhermetic-release.txt
 
       - name: Verify binary execution and report

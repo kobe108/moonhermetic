@@ -8,13 +8,21 @@ pub fn count_by_severity(ScanReport, Severity) -> Int
 
 pub fn count_suppression_status(SuppressionAuditReport, SuppressionStatus) -> Int
 
+pub fn create_baseline(Array[Finding], String, String, String) -> Baseline
+
 pub fn default_scan_options() -> ScanOptions
 
 pub fn default_severity(RuleKind) -> Severity
 
 pub fn filter_findings(Array[Finding], DiffFilter) -> Array[Finding]
 
+pub fn filter_with_baseline(Array[Finding], Baseline, String) -> BaselineFilterResult
+
+pub fn finding_fingerprint(String, Finding) -> String
+
 pub fn has_suppression_errors(SuppressionAuditReport) -> Bool
+
+pub fn make_baseline_report(Int, Array[Finding], Int, Int, Int, String) -> ScanReport
 
 pub fn make_filtered_report(Int, Array[Finding], Int) -> ScanReport
 
@@ -22,7 +30,11 @@ pub fn make_report(Int, Array[Finding]) -> ScanReport
 
 pub fn make_suppression_audit_report(Int, String, Array[SuppressionAudit]) -> SuppressionAuditReport
 
+pub fn parse_baseline(String) -> Baseline raise BaselineError
+
 pub fn parse_unified_diff(String) -> DiffFilter raise DiffParseError
+
+pub fn render_baseline_json(Baseline) -> String
 
 pub fn render_ci_summary(ScanReport) -> String
 
@@ -55,11 +67,35 @@ pub fn scan_source_with_options_and_date(String, String, ScanOptions, String) ->
 pub fn should_fail(ScanReport, Severity) -> Bool
 
 // Errors
+pub(all) suberror BaselineError {
+  BaselineError(String)
+}
+
 pub(all) suberror DiffParseError {
   DiffParseError(String)
 }
 
 // Types and methods
+pub(all) struct Baseline {
+  created_on : String
+  created_with : String
+  entries : Array[BaselineEntry]
+}
+
+pub(all) struct BaselineEntry {
+  fingerprint : String
+  rule_id : String
+  path : String
+  evidence : String
+  count : Int
+}
+
+pub(all) struct BaselineFilterResult {
+  findings : Array[Finding]
+  suppressed_count : Int
+  stale_count : Int
+}
+
 pub(all) struct ChangedFile {
   path : String
   lines : Array[Int]
@@ -111,6 +147,9 @@ pub(all) struct ScanReport {
   scanned_files : Int
   findings : Array[Finding]
   filtered_out : Int
+  baseline_suppressed : Int
+  baseline_stale : Int
+  baseline_path : String?
 }
 
 pub(all) enum Severity {

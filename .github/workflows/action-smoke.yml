@@ -36,6 +36,7 @@ jobs:
           path: examples/safe
           format: text
           fail-on: warning
+          baseline: examples/safe-baseline.json
           output-file: ${{ runner.temp }}/moonhermetic-action.txt
 
       - name: Verify generated summary

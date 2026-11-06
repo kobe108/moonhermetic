@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0
+
+- Add `--write-baseline` to freeze current findings for incremental adoption.
+- Add `--baseline` to suppress recorded findings while reporting only new
+  risks.
+- Use stable SHA-256 fingerprints based on rule, repository-relative path, and
+  whitespace-normalized evidence.
+- Track repeated occurrences so a new duplicate still fails.
+- Report consumed and stale baseline counts in Text, JSON, Markdown, and CI
+  summaries.
+- Validate baseline schema, rules, fingerprints, counts, and path safety
+  strictly.
+- Add a `baseline` input to the reusable GitHub Action.
+
 ## 0.11.0
 
 - Add compact Markdown job summaries for scans and suppression audits.

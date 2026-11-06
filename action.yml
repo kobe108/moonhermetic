@@ -29,6 +29,11 @@ inputs:
   diff:
     description: Unified diff path relative to the caller's workspace
     required: false
+  baseline:
+    description: >-
+      Saved MoonHermetic baseline path relative to the caller's workspace.
+      Baseline findings are reported as accepted rather than newly failing.
+    required: false
   audit-suppressions:
     description: Report suppression governance state instead of scanning
     required: false
@@ -97,6 +102,7 @@ runs:
         INPUT_CONFIG: ${{ inputs.config }}
         INPUT_EXCLUDE: ${{ inputs.exclude }}
         INPUT_DIFF: ${{ inputs.diff }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
         INPUT_AUDIT_SUPPRESSIONS: ${{ inputs.audit-suppressions }}
         INPUT_FAIL_ON_SUPPRESSION: ${{ inputs.fail-on-suppression }}
         INPUT_OUTPUT_FILE: ${{ inputs.output-file }}

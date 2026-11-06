@@ -62,6 +62,9 @@ pub(all) struct ScanReport {
   scanned_files : Int
   findings : Array[Finding]
   filtered_out : Int
+  baseline_suppressed : Int
+  baseline_stale : Int
+  baseline_path : String?
 }
 
 ///|

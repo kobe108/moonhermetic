@@ -127,6 +127,14 @@ export function createActionPlan(
     );
   }
 
+  const baseline = input(env, "INPUT_BASELINE");
+  if (baseline) {
+    args.push(
+      "--baseline",
+      resolveFromWorkspace(resolvedWorkspace, baseline),
+    );
+  }
+
   for (const excluded of input(env, "INPUT_EXCLUDE").split(/\r?\n/)) {
     if (excluded.trim()) {
       args.push("--exclude", excluded.trim());

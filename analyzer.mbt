@@ -456,7 +456,14 @@ pub fn make_report(
   scanned_files : Int,
   findings : Array[Finding],
 ) -> ScanReport {
-  { scanned_files, findings, filtered_out: 0, }
+  {
+    scanned_files,
+    findings,
+    filtered_out: 0,
+    baseline_suppressed: 0,
+    baseline_stale: 0,
+    baseline_path: None,
+  }
 }
 
 ///|
@@ -466,7 +473,34 @@ pub fn make_filtered_report(
   findings : Array[Finding],
   filtered_out : Int,
 ) -> ScanReport {
-  { scanned_files, findings, filtered_out, }
+  {
+    scanned_files,
+    findings,
+    filtered_out,
+    baseline_suppressed: 0,
+    baseline_stale: 0,
+    baseline_path: None,
+  }
+}
+
+///|
+/// Build a report after applying both a saved baseline and optional diff filter.
+pub fn make_baseline_report(
+  scanned_files : Int,
+  findings : Array[Finding],
+  filtered_out : Int,
+  baseline_suppressed : Int,
+  baseline_stale : Int,
+  baseline_path : String,
+) -> ScanReport {
+  {
+    scanned_files,
+    findings,
+    filtered_out,
+    baseline_suppressed,
+    baseline_stale,
+    baseline_path: Some(baseline_path),
+  }
 }
 
 ///|

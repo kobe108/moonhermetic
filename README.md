@@ -35,6 +35,7 @@ location and a concrete remediation before the test is executed.
 - Checksum-verified native binaries for Linux, macOS, and Windows releases.
 - Validated Mooncakes package assets and a guarded publication workflow.
 - GitHub job summaries and an optional managed pull-request comment.
+- Saved baseline mode for adopting MoonHermetic in existing projects.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -86,6 +87,8 @@ moonhermetic [options] [file-or-directory ...]
       --diff <path>
       --audit-suppressions
       --fail-on-suppression
+      --baseline <path>
+      --write-baseline <path>
       --summary-file <path>
       --exclude <text>
       --rules
@@ -139,6 +142,29 @@ Findings outside the patch are counted in `summary.filteredOut` and omitted
 from text, Markdown, and SARIF output. Deleted lines do not count as changed
 lines. A demo patch is available at
 [`examples/changes.diff`](examples/changes.diff).
+
+## Baseline mode
+
+Freeze the current findings when first adopting MoonHermetic:
+
+```bash
+moon run cmd/main -- . --write-baseline .moonhermetic-baseline.json
+```
+
+Later scans accept those recorded findings and fail only for new risks:
+
+```bash
+moon run cmd/main -- . \
+  --baseline .moonhermetic-baseline.json \
+  --fail-on warning
+```
+
+Baseline fingerprints use the rule, repository-relative path, and normalized
+evidence. Moving a known finding to another line or changing whitespace keeps
+it accepted. Repeated occurrences are counted, so adding a new duplicate still
+creates a finding. Reports expose both accepted and stale counts; regenerate
+the baseline to remove stale entries. See
+[`docs/BASELINE.md`](docs/BASELINE.md) for the schema and review policy.
 
 ## Rules
 
@@ -226,7 +252,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.11.0
+    uses: kobe108/moonhermetic@v0.12.0
     with:
       path: .
       format: sarif
@@ -253,7 +279,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.11.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.12.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
@@ -332,7 +358,8 @@ pwsh scripts/run-precision.ps1
 See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the one-month delivery
 plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
 guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
-[docs/RELEASES.md](docs/RELEASES.md) for native binary publishing and
+[docs/RELEASES.md](docs/RELEASES.md) for native binary publishing,
+[docs/BASELINE.md](docs/BASELINE.md) for incremental adoption,
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.

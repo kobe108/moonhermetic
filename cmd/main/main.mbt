@@ -15,6 +15,8 @@ let usage_text =
   #|      --diff <path>                   Only report findings on added unified-diff lines
   #|      --audit-suppressions           Report suppression ownership and expiry state
   #|      --fail-on-suppression          Exit 1 for expired or invalid suppressions
+  #|      --baseline <path>              Ignore findings recorded in a baseline
+  #|      --write-baseline <path>        Write the current findings as a baseline
   #|      --summary-file <path>          Also write a compact GitHub Markdown summary
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
@@ -139,7 +141,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.11.0")
+        println("moonhermetic 0.12.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -172,6 +174,16 @@ fn write_summary(path : String, content : String) -> Unit {
   @fs.write_string_to_file(path, content) catch {
     @fs.IOError(message) => {
       print_error("cannot write summary '\{path}': \{message}")
+      @sys.exit(2)
+    }
+  }
+}
+
+///|
+fn write_baseline_file(path : String, content : String) -> Unit {
+  @fs.write_string_to_file(path, content) catch {
+    @fs.IOError(message) => {
+      print_error("cannot write baseline '\{path}': \{message}")
       @sys.exit(2)
     }
   }
@@ -217,6 +229,8 @@ fn main {
   let mut audit_suppressions = false
   let mut fail_on_suppression = false
   let mut summary_path : String? = None
+  let mut baseline_path : String? = None
+  let mut write_baseline_path : String? = None
   let mut index = 1
   while index < args.length() {
     let arg = args[index]
@@ -255,6 +269,14 @@ fn main {
       }
       "--audit-suppressions" => audit_suppressions = true
       "--fail-on-suppression" => fail_on_suppression = true
+      "--baseline" => {
+        baseline_path = Some(require_value(args, index, arg))
+        index = index + 1
+      }
+      "--write-baseline" => {
+        write_baseline_path = Some(require_value(args, index, arg))
+        index = index + 1
+      }
       "--summary-file" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -287,7 +309,21 @@ fn main {
   if fail_on_suppression {
     audit_suppressions = true
   }
+  if baseline_path is Some(_) && write_baseline_path is Some(_) {
+    print_error("--baseline cannot be combined with --write-baseline")
+    @sys.exit(2)
+  }
+  if write_baseline_path is Some(_) && diff_path is Some(_) {
+    print_error("--write-baseline cannot be combined with --diff")
+    @sys.exit(2)
+  }
   if audit_suppressions {
+    if baseline_path is Some(_) || write_baseline_path is Some(_) {
+      print_error(
+        "baseline options cannot be combined with a suppression audit",
+      )
+      @sys.exit(2)
+    }
     match diff_path {
       Some(_) => {
         print_error("--audit-suppressions cannot be combined with --diff")
@@ -360,9 +396,44 @@ fn main {
     if fail_on_suppression && @lib.has_suppression_errors(audit_report) {
       @sys.exit(1)
     }
+  } else if write_baseline_path is Some(path) {
+    let root = @path.Path(path).dirname().to_string()
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.12.0")
+    write_baseline_file(path, @lib.render_baseline_json(baseline))
+    println(
+      "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +
+      "\{findings.length()} finding(s) to \{path}.",
+    )
   } else {
-    let report = match diff_path {
-      None => @lib.make_report(files.length(), findings)
+    let mut working_findings = findings
+    let mut baseline_suppressed = 0
+    let mut baseline_stale = 0
+    match baseline_path {
+      Some(path) => {
+        let text = @fs.read_file_to_string(path) catch {
+          @fs.IOError(message) => {
+            print_error("cannot read baseline '\{path}': \{message}")
+            @sys.exit(2)
+            abort("unreachable after I/O error")
+          }
+        }
+        let baseline = @lib.parse_baseline(text) catch {
+          @lib.BaselineError(message) => {
+            print_error("invalid baseline '\{path}': \{message}")
+            @sys.exit(2)
+            abort("unreachable after invalid baseline")
+          }
+        }
+        let root = @path.Path(path).dirname().to_string()
+        let result = @lib.filter_with_baseline(working_findings, baseline, root)
+        working_findings = result.findings
+        baseline_suppressed = result.suppressed_count
+        baseline_stale = result.stale_count
+      }
+      None => ()
+    }
+    let (filtered_findings, filtered_out) = match diff_path {
+      None => (working_findings, 0)
       Some(path) => {
         let patch = @fs.read_file_to_string(path) catch {
           @fs.IOError(message) => {
@@ -378,13 +449,30 @@ fn main {
             abort("unreachable after invalid diff")
           }
         }
-        let filtered = @lib.filter_findings(findings, filter)
-        @lib.make_filtered_report(
-          files.length(),
-          filtered,
-          findings.length() - filtered.length(),
-        )
+        let filtered = @lib.filter_findings(working_findings, filter)
+        (filtered, working_findings.length() - filtered.length())
       }
+    }
+    let report = match baseline_path {
+      Some(path) =>
+        @lib.make_baseline_report(
+          files.length(),
+          filtered_findings,
+          filtered_out,
+          baseline_suppressed,
+          baseline_stale,
+          path,
+        )
+      None =>
+        if filtered_out > 0 {
+          @lib.make_filtered_report(
+            files.length(),
+            filtered_findings,
+            filtered_out,
+          )
+        } else {
+          @lib.make_report(files.length(), filtered_findings)
+        }
     }
     let output = match format {
       "json" => @lib.render_json(report)
