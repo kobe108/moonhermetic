@@ -26,6 +26,7 @@ jobs:
           node --test
           tests/action-binary.test.mjs
           tests/action-runner.test.mjs
+          tests/github-report.test.mjs
           tests/package.test.mjs
 
       - name: Run the reusable action
@@ -36,6 +37,11 @@ jobs:
           format: text
           fail-on: warning
           output-file: ${{ runner.temp }}/moonhermetic-action.txt
+
+      - name: Verify job summary
+        shell: bash
+        run: |
+          node -e 'const fs = require("node:fs"); const text = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, "utf8"); if (!text.includes("# MoonHermetic report")) process.exit(1)'
 
       - name: Verify the action report
         shell: bash

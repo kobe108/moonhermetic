@@ -50,7 +50,7 @@ pub fn render_json(report : ScanReport) -> String {
     "schema": Json::string("moonhermetic/v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.10.1"),
+      "version": Json::string("0.11.0"),
     }),
     "summary": Json::object({
       "scannedFiles": Json::number(report.scanned_files.to_double()),
@@ -100,6 +100,68 @@ pub fn render_markdown(report : ScanReport) -> String {
       "| `\{finding.rule.code()}` \{finding.rule.title()} " +
       "| `\{markdown_escape(finding.evidence)}` " +
       "| \{markdown_escape(finding.rule.remediation())} |\n",
+    )
+  }
+  out.to_string()
+}
+
+///|
+fn summary_short(value : String, limit : Int) -> String {
+  let trimmed = value.trim()
+  if trimmed.char_length() <= limit {
+    trimmed.to_owned()
+  } else {
+    "\{trimmed.exact_view(end=limit).to_owned()}..."
+  }
+}
+
+///|
+/// Render a compact Markdown report for GitHub job summaries and PR comments.
+///
+/// At most 20 findings are shown to keep CI reports readable and within API
+/// limits. The complete report remains available through the selected format.
+pub fn render_ci_summary(report : ScanReport) -> String {
+  let out = StringBuilder()
+  let errors = count_by_severity(report, Error)
+  let warnings = count_by_severity(report, Warning)
+  out.write_string("# MoonHermetic report\n\n")
+  out.write_string("| Scanned files | Findings | Errors | Warnings |\n")
+  out.write_string("|---:|---:|---:|---:|\n")
+  out.write_string(
+    "| \{report.scanned_files} | \{report.findings.length()} | " +
+    "\{errors} | \{warnings} |\n\n",
+  )
+  if report.filtered_out > 0 {
+    out.write_string(
+      "\{report.filtered_out} finding(s) outside changed lines were filtered " +
+      "out.\n\n",
+    )
+  }
+  if report.findings.length() == 0 {
+    out.write_string("No hermeticity risks detected.\n")
+    return out.to_string()
+  }
+  let shown = if report.findings.length() < 20 {
+    report.findings.length()
+  } else {
+    20
+  }
+  out.write_string("| Location | Severity | Rule | Evidence |\n")
+  out.write_string("|---|---|---|---|\n")
+  for index = 0; index < shown; index = index + 1 {
+    let finding = report.findings[index]
+    out.write_string(
+      "| `\{markdown_escape(finding.path.replace_all(old="\\", new="/"))}:" +
+      "\{finding.line}:\{finding.column}` " +
+      "| \{finding.severity.to_string()} " +
+      "| `\{finding.rule.code()}` \{finding.rule.title()} " +
+      "| `\{markdown_escape(summary_short(finding.evidence, 160))}` |\n",
+    )
+  }
+  if report.findings.length() > shown {
+    out.write_string(
+      "\n_\{report.findings.length() - shown} additional finding(s) are " +
+      "available in the full report._\n",
     )
   }
   out.to_string()
@@ -157,7 +219,7 @@ pub fn render_sarif(report : ScanReport) -> String {
         "tool": Json::object({
           "driver": Json::object({
             "name": Json::string("MoonHermetic"),
-            "version": Json::string("0.10.1"),
+            "version": Json::string("0.11.0"),
             "informationUri": Json::string(
               "https://github.com/kobe108/moonhermetic",
             ),

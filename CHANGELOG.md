@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.0
+
+- Add compact Markdown job summaries for scans and suppression audits.
+- Add `--summary-file` so any CI system can generate the same summary.
+- Add an opt-in pull-request comment that creates one managed comment and
+  updates it on later runs instead of posting duplicates.
+- Show at most 20 detailed rows in CI summaries while retaining the complete
+  report in the selected full format.
+- Normalize Windows paths in Markdown reports.
+
 ## 0.10.1
 
 - Migrate all string slicing to `exact_view`, eliminating deprecation errors on

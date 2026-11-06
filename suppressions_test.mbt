@@ -101,7 +101,7 @@ test "audit JSON contains parsed summary and tool version" {
   guard root["tool"] is Json::Object(tool) else {
     fail("audit tool must be an object")
   }
-  assert_eq(tool["version"], Json("0.10.1"))
+  assert_eq(tool["version"], Json("0.11.0"))
   guard root["summary"] is Json::Object(summary) else {
     fail("audit summary must be an object")
   }
@@ -159,4 +159,22 @@ test "audit accepts CRLF source files without changing directive metadata" {
   assert_eq(audits.length(), 1)
   assert_true(audits[0].status == @moonhermetic.Active)
   assert_eq(audits[0].reason, Some("crlf"))
+}
+
+///|
+test "audit Markdown summary includes governance counts and ownership" {
+  let audits = @moonhermetic.audit_suppressions(
+    "demo_test.mbt",
+    (
+      #|// hermetic:ignore HERM-NET owner=kobe108 expires=2026-12-31 reason=fixture
+    ),
+    "2026-11-06",
+  )
+  let summary = @moonhermetic.render_suppression_audit_markdown(
+    @moonhermetic.make_suppression_audit_report(1, "2026-11-06", audits),
+  )
+  assert_true(summary.contains("# MoonHermetic suppression audit"))
+  assert_true(summary.contains("| 1 | 0 | 0 | 0 | 0 |"))
+  assert_true(summary.contains("kobe108"))
+  assert_true(summary.contains("fixture"))
 }

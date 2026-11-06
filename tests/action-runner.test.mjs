@@ -18,6 +18,12 @@ test("scan defaults to SARIF and a workspace-relative report", () => {
   assert.equal(result.audit, false);
   assert.equal(result.format, "sarif");
   assert.equal(result.outputPath, path.join(workspace, "moonhermetic.sarif"));
+  assert.equal(result.summary, true);
+  assert.equal(result.prComment, false);
+  assert.equal(
+    result.summaryPath,
+    path.join(workspace, ".moonhermetic-ci", "moonhermetic-summary.md"),
+  );
   assert.deepEqual(result.args.slice(0, 6), [
     "run",
     "cmd/main",
@@ -27,6 +33,7 @@ test("scan defaults to SARIF and a workspace-relative report", () => {
     "sarif",
   ]);
   assert.ok(result.args.includes("--no-config"));
+  assert.ok(result.args.includes("--summary-file"));
 });
 
 test("audit defaults to JSON and enables the governance report", () => {
@@ -85,6 +92,24 @@ test("format and boolean inputs reject invalid values", () => {
   assert.throws(
     () => plan({ INPUT_AUDIT_SUPPRESSIONS: "maybe" }),
     /must be true or false/,
+  );
+  assert.throws(
+    () => plan({ INPUT_SUMMARY: "sometimes" }),
+    /summary must be true or false/,
+  );
+});
+
+test("PR comments create a summary even when job summary output is disabled", () => {
+  const result = plan({
+    INPUT_SUMMARY: "false",
+    INPUT_PR_COMMENT: "true",
+    RUNNER_TEMP: "/runner/temp",
+  });
+  assert.equal(result.summary, false);
+  assert.equal(result.prComment, true);
+  assert.equal(
+    result.summaryPath,
+    path.join("/runner/temp", "moonhermetic-summary.md"),
   );
 });
 

@@ -34,6 +34,7 @@ location and a concrete remediation before the test is executed.
 - A reusable GitHub Action with cross-platform smoke coverage.
 - Checksum-verified native binaries for Linux, macOS, and Windows releases.
 - Validated Mooncakes package assets and a guarded publication workflow.
+- GitHub job summaries and an optional managed pull-request comment.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -85,6 +86,7 @@ moonhermetic [options] [file-or-directory ...]
       --diff <path>
       --audit-suppressions
       --fail-on-suppression
+      --summary-file <path>
       --exclude <text>
       --rules
   -h, --help
@@ -224,7 +226,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.10.1
+    uses: kobe108/moonhermetic@v0.11.0
     with:
       path: .
       format: sarif
@@ -242,10 +244,16 @@ generates a conventional report filename when `output-file` is omitted. See
 [`docs/ACTION.md`](docs/ACTION.md) for all inputs, PR diff examples, the
 governance gate, and artifact uploads.
 
+For a non-Action CI runner, the same compact Markdown can be generated with:
+
+```bash
+moon run cmd/main -- . --summary-file moonhermetic-summary.md
+```
+
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.10.1-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.11.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:

@@ -49,6 +49,7 @@ jobs:
           node --test
           tests/action-binary.test.mjs
           tests/action-runner.test.mjs
+          tests/github-report.test.mjs
           tests/package.test.mjs
 
       - name: Upload release candidate

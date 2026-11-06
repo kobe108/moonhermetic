@@ -49,6 +49,8 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
   Action 会优先下载对应二进制，减少重复安装工具链的时间。
 - 发布前自动校验 Mooncakes ZIP 的必备文件、路径安全和敏感文件；发布
   workflow 只接受 `kobe108` 的隔离凭据。
+- GitHub Action 默认生成 Job Summary，可选地在 PR 中维护一条自动更新、
+  不重复刷屏的 MoonHermetic 评论。
 - 使用 10 个固定公开仓库和 531 个测试文件建立规则回归基准。
 - 使用 14 个正例和 5 个负例计算 reviewed precision、recall 和 specificity。
 - 使用固定 seed 的 SHA-256 分层抽样生成 20 条可重复审查样本。

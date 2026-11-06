@@ -15,6 +15,7 @@ let usage_text =
   #|      --diff <path>                   Only report findings on added unified-diff lines
   #|      --audit-suppressions           Report suppression ownership and expiry state
   #|      --fail-on-suppression          Exit 1 for expired or invalid suppressions
+  #|      --summary-file <path>          Also write a compact GitHub Markdown summary
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
   #|  -h, --help                          Show this help
@@ -138,7 +139,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.10.1")
+        println("moonhermetic 0.11.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -164,6 +165,16 @@ fn current_utc_date() -> String {
   let seconds = (@env.now() / 1000UL).reinterpret_as_int64()
   let instant = @time.unix(seconds) catch { _ => return "9999-12-31" }
   "\{instant.year()}-\{two_digits(instant.month())}-\{two_digits(instant.day())}"
+}
+
+///|
+fn write_summary(path : String, content : String) -> Unit {
+  @fs.write_string_to_file(path, content) catch {
+    @fs.IOError(message) => {
+      print_error("cannot write summary '\{path}': \{message}")
+      @sys.exit(2)
+    }
+  }
 }
 
 ///|
@@ -205,6 +216,7 @@ fn main {
   let mut diff_path : String? = None
   let mut audit_suppressions = false
   let mut fail_on_suppression = false
+  let mut summary_path : String? = None
   let mut index = 1
   while index < args.length() {
     let arg = args[index]
@@ -243,6 +255,15 @@ fn main {
       }
       "--audit-suppressions" => audit_suppressions = true
       "--fail-on-suppression" => fail_on_suppression = true
+      "--summary-file" => {
+        let value = require_value(args, index, arg)
+        if value.is_empty() {
+          print_error("--summary-file cannot be empty")
+          @sys.exit(2)
+        }
+        summary_path = Some(value)
+        index = index + 1
+      }
       "--exclude" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -333,6 +354,9 @@ fn main {
       _ => @lib.render_suppression_audit_text(audit_report)
     }
     println(output)
+    if summary_path is Some(path) {
+      write_summary(path, @lib.render_suppression_audit_markdown(audit_report))
+    }
     if fail_on_suppression && @lib.has_suppression_errors(audit_report) {
       @sys.exit(1)
     }
@@ -369,6 +393,9 @@ fn main {
       _ => @lib.render_text(report)
     }
     println(output)
+    if summary_path is Some(path) {
+      write_summary(path, @lib.render_ci_summary(report))
+    }
 
     let failed = match fail_on {
       "never" => false

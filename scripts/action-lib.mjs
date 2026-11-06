@@ -140,6 +140,18 @@ export function createActionPlan(
     args.push("--fail-on-suppression");
   }
 
+  const summaryInput = input(env, "INPUT_SUMMARY");
+  const summary = summaryInput === "" ? true : parseBoolean(summaryInput, "summary");
+  const prComment = parseBoolean(input(env, "INPUT_PR_COMMENT"), "pr-comment");
+  const runnerTemp = input(env, "RUNNER_TEMP") ||
+    path.join(resolvedWorkspace, ".moonhermetic-ci");
+  const summaryPath = summary || prComment
+    ? path.join(runnerTemp, "moonhermetic-summary.md")
+    : null;
+  if (summaryPath) {
+    args.push("--summary-file", summaryPath);
+  }
+
   const requestedOutput = input(env, "INPUT_OUTPUT_FILE");
   const outputPath = requestedOutput === "-"
     ? null
@@ -155,6 +167,9 @@ export function createActionPlan(
     format,
     target,
     outputPath,
+    summary,
+    summaryPath,
+    prComment,
     args,
   };
 }

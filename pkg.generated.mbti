@@ -24,6 +24,8 @@ pub fn make_suppression_audit_report(Int, String, Array[SuppressionAudit]) -> Su
 
 pub fn parse_unified_diff(String) -> DiffFilter raise DiffParseError
 
+pub fn render_ci_summary(ScanReport) -> String
+
 pub fn render_json(ScanReport) -> String
 
 pub fn render_markdown(ScanReport) -> String
@@ -31,6 +33,8 @@ pub fn render_markdown(ScanReport) -> String
 pub fn render_sarif(ScanReport) -> String
 
 pub fn render_suppression_audit_json(SuppressionAuditReport) -> String
+
+pub fn render_suppression_audit_markdown(SuppressionAuditReport) -> String
 
 pub fn render_suppression_audit_text(SuppressionAuditReport) -> String
 

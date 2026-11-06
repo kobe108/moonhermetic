@@ -42,6 +42,16 @@ inputs:
       Report path relative to the caller's workspace, or - to print to the
       action log. A conventional filename is chosen when omitted.
     required: false
+  summary:
+    description: Append a compact Markdown report to the GitHub job summary
+    required: false
+    default: "true"
+  pr-comment:
+    description: >-
+      Create or update one MoonHermetic comment on a pull request. Requires
+      pull-requests write permission and runs only for pull request events.
+    required: false
+    default: "false"
 
 outputs:
   report-path:
@@ -50,6 +60,9 @@ outputs:
   execution-mode:
     description: Whether MoonHermetic used a release "binary" or "source" fallback
     value: ${{ steps.binary.outputs.mode }}
+  summary-path:
+    description: Absolute path of the generated Markdown summary
+    value: ${{ steps.moonhermetic.outputs.summary-path }}
 
 runs:
   using: composite
@@ -87,7 +100,10 @@ runs:
         INPUT_AUDIT_SUPPRESSIONS: ${{ inputs.audit-suppressions }}
         INPUT_FAIL_ON_SUPPRESSION: ${{ inputs.fail-on-suppression }}
         INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        INPUT_SUMMARY: ${{ inputs.summary }}
+        INPUT_PR_COMMENT: ${{ inputs.pr-comment }}
         MOONHERMETIC_BINARY: ${{ steps.binary.outputs.binary-path }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: node "$ACTION_PATH/scripts/action-runner.mjs"
 
 branding:

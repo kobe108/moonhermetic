@@ -31,7 +31,7 @@ test "json report is valid and structured" {
   guard json is Object(root) else { fail("root must be an object") }
   assert_eq(root["schema"], Json("moonhermetic/v1"))
   guard root["tool"] is Object(tool) else { fail("tool must be an object") }
-  assert_eq(tool["version"], Json("0.10.1"))
+  assert_eq(tool["version"], Json("0.11.0"))
   guard root["findings"] is Array(findings) else {
     fail("findings must be an array")
   }
@@ -88,4 +88,18 @@ test "filtered report exposes the omitted finding count" {
   assert_true(text.contains("ignored 2 finding(s)"))
   assert_true(markdown.contains("2 finding(s) outside changed lines"))
   assert_true(json.contains("\"filteredOut\": 2"))
+}
+
+///|
+test "CI summary is compact and reports omitted findings" {
+  let findings = []
+  for index = 0; index < 25; index = index + 1 {
+    findings.push({ ..sample_finding(@moonhermetic.Network), line: index + 1, })
+  }
+  let summary = @moonhermetic.render_ci_summary(
+    @moonhermetic.make_report(3, findings),
+  )
+  assert_true(summary.contains("# MoonHermetic report"))
+  assert_true(summary.contains("| 3 | 25 | 25 | 0 |"))
+  assert_true(summary.contains("5 additional finding(s)"))
 }

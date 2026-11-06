@@ -43,6 +43,7 @@ history-based flake score.
 - [x] Add configurable rule severity and project exclusions.
 - [x] Add rule-specific suppressions with owner and expiry metadata.
 - [x] Add governance audits and an optional expired-suppression CI gate.
+- [x] Add GitHub job summaries and managed pull-request comments.
 
 ### Week 3: ecosystem validation
 

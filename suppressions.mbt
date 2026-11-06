@@ -520,12 +520,64 @@ pub fn render_suppression_audit_text(report : SuppressionAuditReport) -> String 
 }
 
 ///|
+/// Render a compact suppression governance summary for GitHub CI surfaces.
+pub fn render_suppression_audit_markdown(
+  report : SuppressionAuditReport,
+) -> String {
+  let out = StringBuilder()
+  out.write_string("# MoonHermetic suppression audit\n\n")
+  out.write_string(
+    "Scanned **\{report.scanned_files}** test file(s) on " +
+    "**\{report.today}**.\n\n",
+  )
+  out.write_string("| Active | Expiring soon | Expired | Legacy | Invalid |\n")
+  out.write_string("|---:|---:|---:|---:|---:|\n")
+  out.write_string(
+    "| \{count_suppression_status(report, Active)} " +
+    "| \{count_suppression_status(report, ExpiringSoon)} " +
+    "| \{count_suppression_status(report, Expired)} " +
+    "| \{count_suppression_status(report, Legacy)} " +
+    "| \{count_suppression_status(report, Invalid)} |\n\n",
+  )
+  if report.audits.length() == 0 {
+    out.write_string("No suppression directives found.\n")
+    return out.to_string()
+  }
+  let shown = if report.audits.length() < 20 {
+    report.audits.length()
+  } else {
+    20
+  }
+  out.write_string("| Location | Status | Rules | Owner | Expires | Reason |\n")
+  out.write_string("|---|---|---|---|---|---|\n")
+  for index = 0; index < shown; index = index + 1 {
+    let audit = report.audits[index]
+    out.write_string(
+      "| `\{markdown_escape(audit.path.replace_all(old="\\", new="/"))}:" +
+      "\{audit.line}:\{audit.column}` " +
+      "| \{audit.status.to_string()} " +
+      "| `\{markdown_escape(audit_rules_label(audit))}` " +
+      "| \{match audit.owner { Some(owner) => markdown_escape(owner); None => "-" }} " +
+      "| \{match audit.expires { Some(expires) => expires; None => "-" }} " +
+      "| \{match audit.reason { Some(reason) => markdown_escape(reason); None => "-" }} |\n",
+    )
+  }
+  if report.audits.length() > shown {
+    out.write_string(
+      "\n_\{report.audits.length() - shown} additional suppression(s) are " +
+      "available in the full report._\n",
+    )
+  }
+  out.to_string()
+}
+
+///|
 pub fn render_suppression_audit_json(report : SuppressionAuditReport) -> String {
   Json::object({
     "schema": Json::string("moonhermetic/suppression-audit-v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.10.1"),
+      "version": Json::string("0.11.0"),
     }),
     "today": Json::string(report.today),
     "summary": Json::object({
