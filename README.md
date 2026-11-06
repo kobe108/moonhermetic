@@ -224,7 +224,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.10.0
+    uses: kobe108/moonhermetic@v0.10.1
     with:
       path: .
       format: sarif
@@ -245,7 +245,7 @@ governance gate, and artifact uploads.
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.10.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.10.1-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:

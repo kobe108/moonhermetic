@@ -46,15 +46,15 @@ function zipWithCentralDirectory(entries) {
 
 test("parses module metadata and derives the package filename", () => {
   const manifest = parseModuleManifest(
-    'name = "kobe108/moonhermetic"\nversion = "0.10.0"\n',
+    'name = "kobe108/moonhermetic"\nversion = "0.10.1"\n',
   );
   assert.deepEqual(manifest, {
     name: "kobe108/moonhermetic",
-    version: "0.10.0",
+    version: "0.10.1",
   });
   assert.equal(
     packageArchiveName(manifest.name, manifest.version),
-    "kobe108-moonhermetic-0.10.0.zip",
+    "kobe108-moonhermetic-0.10.1.zip",
   );
 });
 

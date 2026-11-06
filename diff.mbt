@@ -19,7 +19,7 @@ pub(all) struct DiffFilter {
 fn normalize_diff_path(path : String) -> String {
   let mut normalized = path.trim().replace_all(old="\\", new="/").to_owned()
   if normalized.has_prefix("./") {
-    normalized = normalized.view(start_offset=2).to_owned()
+    normalized = normalized.exact_view(start=2).to_owned()
   }
   normalized
 }
@@ -27,7 +27,7 @@ fn normalize_diff_path(path : String) -> String {
 ///|
 fn parse_patch_path(value : String) -> String? {
   let raw = match value.find("\t") {
-    Some(index) => value.view(end_offset=index).to_owned()
+    Some(index) => value.exact_view(end=index).to_owned()
     None => value.trim().to_owned()
   }
   if raw == "/dev/null" {
@@ -36,12 +36,12 @@ fn parse_patch_path(value : String) -> String? {
   let unquoted = if raw.has_prefix("\"") &&
     raw.has_suffix("\"") &&
     raw.char_length() >= 2 {
-    raw.view(start_offset=1, end_offset=raw.char_length() - 1).to_owned()
+    raw.exact_view(start=1, end=raw.char_length() - 1).to_owned()
   } else {
     raw
   }
   let path = if unquoted.has_prefix("b/") || unquoted.has_prefix("a/") {
-    unquoted.view(start_offset=2).to_owned()
+    unquoted.exact_view(start=2).to_owned()
   } else {
     unquoted
   }
@@ -117,7 +117,7 @@ pub fn parse_unified_diff(patch : String) -> DiffFilter raise DiffParseError {
       in_hunk = false
       new_line = 0
     } else if line.has_prefix("+++ ") {
-      current_path = parse_patch_path(line.view(start_offset=4).to_owned())
+      current_path = parse_patch_path(line.exact_view(start=4).to_owned())
       in_hunk = false
       new_line = 0
       saw_file_header = true

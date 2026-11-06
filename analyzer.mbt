@@ -141,7 +141,7 @@ fn find_bounded_pattern(code : String, pattern : String) -> Int? {
     return code.find(pattern)
   }
   let mut base = 0
-  let mut remaining = code.view()
+  let mut remaining = code.exact_view()
   while remaining.find(pattern) is Some(index) {
     let absolute = base + index
     if absolute == 0 ||
@@ -152,7 +152,7 @@ fn find_bounded_pattern(code : String, pattern : String) -> Int? {
       return Some(absolute)
     }
     base = absolute + 1
-    remaining = code.view(start_offset=base)
+    remaining = code.exact_view(start=base)
   }
   None
 }
@@ -200,7 +200,7 @@ fn line_comment(raw_line : String) -> String? {
     } else if current == '"' || current == '\'' {
       quote = Some(current)
     } else if current == '/' && chars[i + 1] == '/' {
-      return Some(raw_line.view(start_offset=i + 2).to_owned())
+      return Some(raw_line.exact_view(start=i + 2).to_owned())
     }
     i = i + 1
   }
@@ -270,8 +270,8 @@ fn parse_suppression(raw_line : String) -> Suppression? {
   while !rest.is_empty() {
     let token = match rest.find_by(c => c == ' ' || c == '\t') {
       Some(index) => {
-        let token = rest.view(end_offset=index).to_owned()
-        rest = rest.view(start_offset=index + 1).trim_start()
+        let token = rest.exact_view(end=index).to_owned()
+        rest = rest.exact_view(start=index + 1).trim_start()
         token
       }
       None => {
@@ -281,13 +281,13 @@ fn parse_suppression(raw_line : String) -> Suppression? {
       }
     }
     if token.has_prefix("owner=") {
-      let value = token.view(start_offset=6).trim().to_owned()
+      let value = token.exact_view(start=6).trim().to_owned()
       if value.is_empty() {
         return None
       }
       owner = Some(value)
     } else if token.has_prefix("expires=") {
-      let value = token.view(start_offset=8).trim().to_owned()
+      let value = token.exact_view(start=8).trim().to_owned()
       if !valid_iso_date(value) {
         return None
       }

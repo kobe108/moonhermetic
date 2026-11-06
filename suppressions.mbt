@@ -93,7 +93,7 @@ fn scan_line_comment(
     }
     if chars[i] == '/' && i + 1 < chars.length() && chars[i + 1] == '/' {
       return {
-        comment: Some(raw_line.view(start_offset=i + 2).to_owned()),
+        comment: Some(raw_line.exact_view(start=i + 2).to_owned()),
         comment_column: i + 2,
         block_depth,
       }
@@ -209,7 +209,7 @@ fn parse_suppression_audit(
       rules: [],
       owner: None,
       expires: None,
-      reason: Some(rest.view(start_offset=1).trim().to_owned()),
+      reason: Some(rest.exact_view(start=1).trim().to_owned()),
       status: Legacy,
       message: "Legacy suppression has no owner or expiry.",
     })
@@ -222,8 +222,8 @@ fn parse_suppression_audit(
   while !rest.is_empty() {
     let token = match rest.find_by(c => c == ' ' || c == '\t') {
       Some(index) => {
-        let token = rest.view(end_offset=index).to_owned()
-        rest = rest.view(start_offset=index + 1).trim_start()
+        let token = rest.exact_view(end=index).to_owned()
+        rest = rest.exact_view(start=index + 1).trim_start()
         token
       }
       None => {
@@ -233,7 +233,7 @@ fn parse_suppression_audit(
       }
     }
     if token.has_prefix("owner=") {
-      let value = token.view(start_offset=6).trim().to_owned()
+      let value = token.exact_view(start=6).trim().to_owned()
       if value.is_empty() {
         return Some(
           invalid_audit(
@@ -243,7 +243,7 @@ fn parse_suppression_audit(
       }
       owner = Some(value)
     } else if token.has_prefix("expires=") {
-      let value = token.view(start_offset=8).trim().to_owned()
+      let value = token.exact_view(start=8).trim().to_owned()
       if !valid_iso_date(value) {
         return Some(
           invalid_audit(
@@ -259,7 +259,7 @@ fn parse_suppression_audit(
       }
       expires = Some(value)
     } else if token.has_prefix("reason=") {
-      let value = token.view(start_offset=7).to_owned()
+      let value = token.exact_view(start=7).to_owned()
       reason = Some(if rest.is_empty() { value } else { "\{value} \{rest}" })
       rest = ""
     } else {
@@ -525,7 +525,7 @@ pub fn render_suppression_audit_json(report : SuppressionAuditReport) -> String 
     "schema": Json::string("moonhermetic/suppression-audit-v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.10.0"),
+      "version": Json::string("0.10.1"),
     }),
     "today": Json::string(report.today),
     "summary": Json::object({

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.1
+
+- Migrate all string slicing to `exact_view`, eliminating deprecation errors on
+  current MoonBit toolchains.
+- Keep the Mooncakes publication preflight warning-free under
+  `moon check --target all --deny-warn`.
+- Rebuild native and Mooncakes release artifacts from the corrected source.
+
 ## 0.10.0
 
 - Add a Mooncakes publication workflow with a token-free package preflight.
