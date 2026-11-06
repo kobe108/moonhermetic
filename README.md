@@ -36,6 +36,8 @@ location and a concrete remediation before the test is executed.
 - Validated Mooncakes package assets and a guarded publication workflow.
 - GitHub job summaries and an optional managed pull-request comment.
 - Saved baseline mode for adopting MoonHermetic in existing projects.
+- A one-command `init` flow that creates configuration and a safe first
+  baseline.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -65,6 +67,23 @@ Published Mooncakes releases can be added without cloning the repository:
 moon add kobe108/moonhermetic
 ```
 
+Initialize an existing project with the default configuration and baseline:
+
+```bash
+moon run cmd/main -- init
+```
+
+This creates `.moonhermetic.json` and `.moonhermetic-baseline.json`. Existing
+files are never overwritten unless `--force` is supplied. Use
+`--no-baseline` when only configuration is wanted, or provide a target and
+custom paths:
+
+```bash
+moon run cmd/main -- init subproject \
+  --config config/moonhermetic.json \
+  --baseline config/moonhermetic-baseline.json
+```
+
 Example output:
 
 ```text
@@ -79,6 +98,7 @@ MoonHermetic scanned 2 test file(s): 3 finding(s), 2 error(s), 1 warning(s).
 
 ```text
 moonhermetic [options] [file-or-directory ...]
+moonhermetic init [path] [options]
 
   -f, --format <text|json|markdown|sarif>
       --fail-on <never|warning|error>
@@ -95,6 +115,8 @@ moonhermetic [options] [file-or-directory ...]
   -h, --help
   -V, --version
 ```
+
+Run `moonhermetic init --help` for initialization options.
 
 Without a path, MoonHermetic scans the current directory. It only selects
 files ending in `_test.mbt` or `_wbtest.mbt`, and skips `_build`, `.git`,
@@ -252,7 +274,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.12.0
+    uses: kobe108/moonhermetic@v0.13.0
     with:
       path: .
       format: sarif
@@ -279,7 +301,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.12.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.13.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:

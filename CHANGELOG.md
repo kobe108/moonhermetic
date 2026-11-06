@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0
+
+- Add `moonhermetic init` to generate a complete rule configuration and
+  initial baseline in one command.
+- Refuse to overwrite existing generated files unless `--force` is explicit.
+- Add `--no-baseline` for projects that only want configuration.
+- Support custom target, config, and baseline paths.
+- Validate the full target before writing generated files so scan failures do
+  not leave a partially initialized project.
+
 ## 0.12.0
 
 - Add `--write-baseline` to freeze current findings for incremental adoption.

@@ -4,6 +4,7 @@ const REQUIRED_ENTRIES = [
   "action.yml",
   "analyzer.mbt",
   "baseline.mbt",
+  "cmd/main/init.mbt",
   "cmd/main/main.mbt",
   "cmd/main/moon.pkg",
   "docs/BASELINE.md",

@@ -10,19 +10,19 @@ workflow builds one binary on each current GitHub-hosted runner family:
 Each asset is named with its version, platform, and architecture:
 
 ```text
-moonhermetic-v0.12.0-linux-x86_64
-moonhermetic-v0.12.0-windows-x86_64.exe
-moonhermetic-v0.12.0-macos-arm64
-moonhermetic-v0.12.0-mooncakes.zip
+moonhermetic-v0.13.0-linux-x86_64
+moonhermetic-v0.13.0-windows-x86_64.exe
+moonhermetic-v0.13.0-macos-arm64
+moonhermetic-v0.13.0-mooncakes.zip
 ```
 
 A matching `.sha256` file is published beside every executable. Release
 downloads should verify the checksum before running the executable:
 
 ```bash
-sha256sum -c moonhermetic-v0.12.0-linux-x86_64.sha256
-chmod +x moonhermetic-v0.12.0-linux-x86_64
-./moonhermetic-v0.12.0-linux-x86_64 --version
+sha256sum -c moonhermetic-v0.13.0-linux-x86_64.sha256
+chmod +x moonhermetic-v0.13.0-linux-x86_64
+./moonhermetic-v0.13.0-linux-x86_64 --version
 ```
 
 The reusable GitHub Action performs the checksum verification automatically

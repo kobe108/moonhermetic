@@ -60,6 +60,20 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Test init flow
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP "moonhermetic-init"
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          moon run cmd/main -- init examples/risky `
+            --config (Join-Path $dir "moonhermetic.json") `
+            --baseline (Join-Path $dir "baseline.json")
+          $baseline = Get-Content (Join-Path $dir "baseline.json") -Raw |
+            ConvertFrom-Json
+          if ($baseline.findings.Count -ne 3) {
+            throw "expected three baseline entries"
+          }
+
       - name: Audit suppressions
         uses: ./
         with:

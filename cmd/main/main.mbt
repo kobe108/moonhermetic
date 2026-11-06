@@ -4,6 +4,7 @@ let usage_text =
   #|
   #|Usage:
   #|  moonhermetic [options] [file-or-directory ...]
+  #|  moonhermetic init [path] [options]
   #|
   #|Options:
   #|  -f, --format <text|json|markdown|sarif>
@@ -141,7 +142,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.12.0")
+        println("moonhermetic 0.13.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -192,6 +193,7 @@ fn write_baseline_file(path : String, content : String) -> Unit {
 ///|
 fn main {
   let args = @env.args()
+  handle_init_args(args)
   handle_info_args(args)
   let mut config_path : String? = None
   let mut config_disabled = false
@@ -398,7 +400,7 @@ fn main {
     }
   } else if write_baseline_path is Some(path) {
     let root = @path.Path(path).dirname().to_string()
-    let baseline = @lib.create_baseline(findings, root, scan_date, "0.12.0")
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.13.0")
     write_baseline_file(path, @lib.render_baseline_json(baseline))
     println(
       "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +

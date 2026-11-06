@@ -27,12 +27,12 @@ test("maps runner platforms and architectures to release assets", () => {
 });
 
 test("builds versioned binary names and release URLs", () => {
-  const asset = binaryAssetName("0.12.0", "windows", "x86_64");
-  assert.equal(asset, "moonhermetic-v0.12.0-windows-x86_64.exe");
+  const asset = binaryAssetName("0.13.0", "windows", "x86_64");
+  assert.equal(asset, "moonhermetic-v0.13.0-windows-x86_64.exe");
   assert.equal(
-    releaseDownloadUrl("kobe108/moonhermetic", "v0.12.0", asset),
-    "https://github.com/kobe108/moonhermetic/releases/download/v0.12.0/" +
-      "moonhermetic-v0.12.0-windows-x86_64.exe",
+    releaseDownloadUrl("kobe108/moonhermetic", "v0.13.0", asset),
+    "https://github.com/kobe108/moonhermetic/releases/download/v0.13.0/" +
+      "moonhermetic-v0.13.0-windows-x86_64.exe",
   );
 });
 
@@ -40,18 +40,18 @@ test("only tagged releases of the canonical repository use binaries", () => {
   assert.deepEqual(
     parseActionRelease({
       ACTION_REPOSITORY: "kobe108/moonhermetic",
-      ACTION_REF: "v0.12.0",
+      ACTION_REF: "v0.13.0",
     }),
     {
       repository: "kobe108/moonhermetic",
-      ref: "v0.12.0",
-      version: "0.12.0",
+      ref: "v0.13.0",
+      version: "0.13.0",
     },
   );
   assert.equal(
     parseActionRelease({
       ACTION_REPOSITORY: "fork/moonhermetic",
-      ACTION_REF: "v0.12.0",
+      ACTION_REF: "v0.13.0",
     }),
     null,
   );
@@ -66,7 +66,7 @@ test("only tagged releases of the canonical repository use binaries", () => {
 
 test("checksum parser requires an exact asset match", () => {
   const hash = "a".repeat(64);
-  const asset = "moonhermetic-v0.12.0-linux-x86_64";
+  const asset = "moonhermetic-v0.13.0-linux-x86_64";
   assert.equal(expectedSha256(`${hash}  ${asset}\n`, asset), hash);
   assert.equal(expectedSha256(`${hash.toUpperCase()} *${asset}\r\n`, asset), hash);
   assert.throws(
