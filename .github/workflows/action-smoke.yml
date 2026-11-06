@@ -60,6 +60,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Set up MoonBit for init smoke
+        uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update MoonBit registry for init smoke
+        run: moon update
+
       - name: Test init flow
         shell: pwsh
         run: |
