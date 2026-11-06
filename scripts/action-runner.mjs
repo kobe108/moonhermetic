@@ -33,18 +33,24 @@ if (plan.outputPath) {
   stdout = outputDescriptor;
 }
 
-const result = spawnSync("moon", plan.args, {
-  cwd: plan.actionPath,
-  env: process.env,
-  stdio: ["ignore", stdout, "inherit"],
-});
+const binary = (process.env.MOONHERMETIC_BINARY ?? "").trim();
+const useBinary = binary !== "";
+const result = spawnSync(
+  useBinary ? binary : "moon",
+  useBinary ? plan.args.slice(3) : plan.args,
+  {
+    cwd: useBinary ? plan.workspace : plan.actionPath,
+    env: process.env,
+    stdio: ["ignore", stdout, "inherit"],
+  },
+);
 
 if (outputDescriptor !== undefined) {
   fs.closeSync(outputDescriptor);
 }
 
 if (result.error) {
-  fail(`could not run MoonBit: ${result.error.message}`);
+  fail(`could not run MoonHermetic: ${result.error.message}`);
 }
 
 if (plan.outputPath) {

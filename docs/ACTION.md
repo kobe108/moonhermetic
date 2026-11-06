@@ -1,14 +1,17 @@
 # Reusable GitHub Action
 
-MoonHermetic can run as a composite GitHub Action. The action installs the
-MoonBit toolchain, runs MoonHermetic from its own pinned source, and scans the
-caller's checked-out workspace. The caller does not need to copy an executable
-or MoonHermetic source into the repository.
+MoonHermetic can run as a composite GitHub Action. The caller does not need to
+copy an executable or MoonHermetic source into the repository.
+
+For version tags such as `v0.9.0`, the Action downloads the matching Linux,
+macOS, or Windows binary and verifies its SHA-256 checksum before execution.
+Branch refs, local `uses: ./` checks, and unsupported runner architectures
+fall back to installing MoonBit and running the pinned source.
 
 Pin the action to a release tag or commit SHA:
 
 ```yaml
-- uses: kobe108/moonhermetic@v0.8.0
+- uses: kobe108/moonhermetic@v0.9.0
 ```
 
 ## Scan and upload SARIF
@@ -30,7 +33,7 @@ jobs:
 
       - name: MoonHermetic
         id: hermetic
-        uses: kobe108/moonhermetic@v0.8.0
+        uses: kobe108/moonhermetic@v0.9.0
         with:
           path: .
           format: sarif
@@ -44,7 +47,8 @@ jobs:
 ```
 
 The caller's `.moonhermetic.json` is discovered automatically. No MoonBit setup
-step is required because the Action performs it.
+step is required. Release Actions use a verified native binary; development
+refs transparently use the source fallback.
 
 ## Scan only changed lines
 
@@ -60,7 +64,7 @@ Generate a unified diff before invoking the Action:
       > "$RUNNER_TEMP/moonhermetic.diff"
 
 - name: MoonHermetic changed lines
-  uses: kobe108/moonhermetic@v0.8.0
+  uses: kobe108/moonhermetic@v0.9.0
   with:
     diff: ${{ runner.temp }}/moonhermetic.diff
     format: markdown
@@ -75,7 +79,7 @@ Audit ownership and expiry without failing:
 
 ```yaml
 - name: Suppression audit
-  uses: kobe108/moonhermetic@v0.8.0
+  uses: kobe108/moonhermetic@v0.9.0
   with:
     audit-suppressions: true
     output-file: moonhermetic-suppressions.json
@@ -85,7 +89,7 @@ Enable the CI gate:
 
 ```yaml
 - name: Reject expired suppressions
-  uses: kobe108/moonhermetic@v0.8.0
+  uses: kobe108/moonhermetic@v0.9.0
   with:
     fail-on-suppression: true
 ```
@@ -109,7 +113,9 @@ scoped directives, while legacy directives remain visible and non-fatal.
 
 ## Outputs and artifacts
 
-The `report-path` output contains the absolute path of the generated report:
+The `report-path` output contains the absolute path of the generated report.
+The `execution-mode` output is `binary` when a verified release executable was
+used, or `source` when the MoonBit fallback was required:
 
 ```yaml
 - name: Upload report

@@ -32,6 +32,7 @@ location and a concrete remediation before the test is executed.
 - Suppression governance reports for active, expiring, expired, legacy, and
   invalid directives.
 - A reusable GitHub Action with cross-platform smoke coverage.
+- Checksum-verified native binaries for Linux, macOS, and Windows releases.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -201,9 +202,10 @@ collecting directives.
 
 ## GitHub Actions
 
-The repository is also a composite Action. It installs MoonBit, scans the
-caller's workspace, respects the caller's `.moonhermetic.json`, and exposes the
-generated report path:
+The repository is also a composite Action. On release tags it downloads the
+checksum-verified binary for the runner platform; local or branch checkouts
+fall back to installing MoonBit. It scans the caller's workspace, respects
+`.moonhermetic.json`, and exposes the generated report path:
 
 ```yaml
 permissions:
@@ -215,7 +217,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.8.0
+    uses: kobe108/moonhermetic@v0.9.0
     with:
       path: .
       format: sarif
@@ -232,6 +234,11 @@ The Action defaults to SARIF for scans and JSON for suppression audits. It
 generates a conventional report filename when `output-file` is omitted. See
 [`docs/ACTION.md`](docs/ACTION.md) for all inputs, PR diff examples, the
 governance gate, and artifact uploads.
+
+Direct native binaries and their checksums are available from
+[GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
+asset names include the version, platform, and architecture, for example
+`moonhermetic-v0.9.0-linux-x86_64`.
 
 The equivalent manual workflow is:
 
@@ -288,7 +295,7 @@ println(@moonhermetic.render_suppression_audit_json(governance))
 ## Roadmap
 
 - Add precision fixtures from real MoonBit projects.
-- Ship signed native binaries.
+- Add code signing and notarization for native binaries.
 
 ## Development
 
@@ -309,6 +316,7 @@ pwsh scripts/run-precision.ps1
 See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the one-month delivery
 plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
 guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
+[docs/RELEASES.md](docs/RELEASES.md) for native binary publishing and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.
 

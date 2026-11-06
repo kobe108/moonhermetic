@@ -47,16 +47,29 @@ outputs:
   report-path:
     description: Absolute path of the generated report, empty when using stdout
     value: ${{ steps.moonhermetic.outputs.report-path }}
+  execution-mode:
+    description: Whether MoonHermetic used a release "binary" or "source" fallback
+    value: ${{ steps.binary.outputs.mode }}
 
 runs:
   using: composite
   steps:
+    - name: Resolve release binary
+      id: binary
+      shell: bash
+      env:
+        ACTION_REPOSITORY: ${{ github.action_repository }}
+        ACTION_REF: ${{ github.action_ref }}
+      run: node "${{ github.action_path }}/scripts/action-binary.mjs"
+
     - name: Set up MoonBit
+      if: steps.binary.outputs.available != 'true'
       uses: hustcer/setup-moonbit@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Update MoonBit registry
+      if: steps.binary.outputs.available != 'true'
       shell: bash
       run: moon update
 
@@ -74,6 +87,7 @@ runs:
         INPUT_AUDIT_SUPPRESSIONS: ${{ inputs.audit-suppressions }}
         INPUT_FAIL_ON_SUPPRESSION: ${{ inputs.fail-on-suppression }}
         INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        MOONHERMETIC_BINARY: ${{ steps.binary.outputs.binary-path }}
       run: node "$ACTION_PATH/scripts/action-runner.mjs"
 
 branding:

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.0
+
+- Build and publish native MoonHermetic executables for Linux, macOS, and
+  Windows.
+- Publish a SHA-256 checksum beside every release binary.
+- Make release-tagged GitHub Actions download and verify the matching binary
+  instead of installing the full MoonBit toolchain.
+- Keep a source-build fallback for branch refs, local action checkouts, and
+  runners without a matching binary.
+- Add deterministic release packaging and platform/checksum unit tests.
+
 ## 0.8.0
 
 - Add a reusable composite GitHub Action that installs MoonBit and runs the

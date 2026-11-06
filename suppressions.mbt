@@ -525,7 +525,7 @@ pub fn render_suppression_audit_json(report : SuppressionAuditReport) -> String 
     "schema": Json::string("moonhermetic/suppression-audit-v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.8.0"),
+      "version": Json::string("0.9.0"),
     }),
     "today": Json::string(report.today),
     "summary": Json::object({
