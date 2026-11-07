@@ -55,6 +55,8 @@ Mooncakes 上已有 API 兼容、供应链、WASM 体积、变异测试和运行
   重复出现的同类风险仍按次数追踪。
 - 提供 `moonhermetic init` 一条命令完成配置和首次基线初始化，默认保护
   已有文件，适合在真实仓库中安全接入。
+- `moonhermetic doctor` 会诊断测试发现、配置、豁免、基线和新增风险，并
+  支持 JSON 与严格 CI 模式。
 - 使用 10 个固定公开仓库和 531 个测试文件建立规则回归基准。
 - 使用 14 个正例和 5 个负例计算 reviewed precision、recall 和 specificity。
 - 使用固定 seed 的 SHA-256 分层抽样生成 20 条可重复审查样本。

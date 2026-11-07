@@ -21,7 +21,7 @@ jobs:
 
       - name: Run released action
         id: moonhermetic
-        uses: kobe108/moonhermetic@v0.13.0
+        uses: kobe108/moonhermetic@v0.14.0
         with:
           path: examples/safe
           format: text

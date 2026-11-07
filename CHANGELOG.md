@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.0
+
+- Add `moonhermetic doctor` diagnostics for test discovery, project config,
+  suppression directives, baselines, and new findings.
+- Add human-readable and stable JSON doctor reports with remediation hints.
+- Add `--strict` to make doctor warnings fail CI.
+- Validate that generated baselines are stored in an ancestor directory of the
+  scanned target, preventing unsafe absolute fingerprints.
+
 ## 0.13.0
 
 - Add `moonhermetic init` to generate a complete rule configuration and

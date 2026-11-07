@@ -38,6 +38,7 @@ location and a concrete remediation before the test is executed.
 - Saved baseline mode for adopting MoonHermetic in existing projects.
 - A one-command `init` flow that creates configuration and a safe first
   baseline.
+- A `doctor` command for validating setup, policy, buffers, and CI readiness.
 - Project configuration for rule disabling, severity overrides, exclusions, and
   the default CI failure threshold.
 - Unified-diff mode that reports only findings introduced on changed lines.
@@ -99,6 +100,7 @@ MoonHermetic scanned 2 test file(s): 3 finding(s), 2 error(s), 1 warning(s).
 ```text
 moonhermetic [options] [file-or-directory ...]
 moonhermetic init [path] [options]
+moonhermetic doctor [path] [options]
 
   -f, --format <text|json|markdown|sarif>
       --fail-on <never|warning|error>
@@ -117,6 +119,13 @@ moonhermetic init [path] [options]
 ```
 
 Run `moonhermetic init --help` for initialization options.
+
+Run project diagnostics with:
+
+```bash
+moon run cmd/main -- doctor
+moon run cmd/main -- doctor --format json --strict
+```
 
 Without a path, MoonHermetic scans the current directory. It only selects
 files ending in `_test.mbt` or `_wbtest.mbt`, and skips `_build`, `.git`,
@@ -274,7 +283,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.13.0
+    uses: kobe108/moonhermetic@v0.14.0
     with:
       path: .
       format: sarif
@@ -301,7 +310,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.13.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.14.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
@@ -382,6 +391,7 @@ plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
 guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/RELEASES.md](docs/RELEASES.md) for native binary publishing,
 [docs/BASELINE.md](docs/BASELINE.md) for incremental adoption,
+[docs/DOCTOR.md](docs/DOCTOR.md) for setup diagnostics,
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.

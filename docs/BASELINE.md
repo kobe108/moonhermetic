@@ -69,7 +69,7 @@ explicit policy change.
 {
   "schema": "moonhermetic/baseline-v1",
   "createdOn": "2026-11-07",
-  "createdWith": "0.13.0",
+  "createdWith": "0.14.0",
   "findings": [
     {
       "fingerprint": "<64 lowercase or uppercase hex characters>",

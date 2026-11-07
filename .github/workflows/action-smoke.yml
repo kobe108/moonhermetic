@@ -73,7 +73,9 @@ jobs:
         run: |
           $dir = Join-Path $env:RUNNER_TEMP "moonhermetic-init"
           New-Item -ItemType Directory -Force -Path $dir | Out-Null
-          moon run cmd/main -- init examples/risky `
+          Copy-Item examples/risky/checkout_test.mbt `
+            (Join-Path $dir "risky_test.mbt")
+          moon run cmd/main -- init $dir `
             --config (Join-Path $dir "moonhermetic.json") `
             --baseline (Join-Path $dir "baseline.json")
           $baseline = Get-Content (Join-Path $dir "baseline.json") -Raw |
@@ -81,6 +83,10 @@ jobs:
           if ($baseline.findings.Count -ne 3) {
             throw "expected three baseline entries"
           }
+          moon run cmd/main -- doctor $dir `
+            --config (Join-Path $dir "moonhermetic.json") `
+            --baseline (Join-Path $dir "baseline.json") `
+            --strict
 
       - name: Audit suppressions
         uses: ./

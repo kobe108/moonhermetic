@@ -46,6 +46,7 @@ history-based flake score.
 - [x] Add GitHub job summaries and managed pull-request comments.
 - [x] Add stable finding baselines for incremental project adoption.
 - [x] Add a one-command project initialization flow.
+- [x] Add a doctor command for project and CI readiness diagnostics.
 
 ### Week 3: ecosystem validation
 

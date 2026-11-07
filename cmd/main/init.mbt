@@ -114,6 +114,29 @@ fn write_init_file(path : String, content : String) -> Unit {
 }
 
 ///|
+fn baseline_scope_error(
+  targets : Array[String],
+  baseline_path : String,
+) -> String? {
+  let root = @path.Path(baseline_path).dirname().resolve().to_string()
+  let root = root.replace_all(old="\\", new="/")
+  let prefix = if root == "/" { "/" } else { "\{root}/" }
+  for target in targets {
+    let resolved = @path.Path(target)
+      .resolve()
+      .to_string()
+      .replace_all(old="\\", new="/")
+    if resolved != root && !resolved.has_prefix(prefix) {
+      return Some(
+        "baseline '\{baseline_path}' must live in a directory that contains " +
+        "'\{target}'; otherwise repository-relative fingerprints are unsafe",
+      )
+    }
+  }
+  None
+}
+
+///|
 fn handle_init_args(args : Array[String]) -> Unit {
   if args.length() < 2 || args[1] != "init" {
     return
@@ -121,7 +144,12 @@ fn handle_init_args(args : Array[String]) -> Unit {
   let options = parse_init_options(args)
   prepare_init_destination(options.config_path, options.force)
   match options.baseline_path {
-    Some(path) => prepare_init_destination(path, options.force)
+    Some(path) => {
+      prepare_init_destination(path, options.force)
+      if baseline_scope_error([options.target], path) is Some(message) {
+        init_error(message)
+      }
+    }
     None => ()
   }
 
@@ -151,7 +179,7 @@ fn handle_init_args(args : Array[String]) -> Unit {
         }
       }
       let root = @path.Path(path).dirname().to_string()
-      let baseline = @lib.create_baseline(findings, root, scan_date, "0.13.0")
+      let baseline = @lib.create_baseline(findings, root, scan_date, "0.14.0")
       Some(
         (
           @lib.render_baseline_json(baseline),

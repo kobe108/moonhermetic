@@ -101,7 +101,7 @@ test "audit JSON contains parsed summary and tool version" {
   guard root["tool"] is Json::Object(tool) else {
     fail("audit tool must be an object")
   }
-  assert_eq(tool["version"], Json("0.13.0"))
+  assert_eq(tool["version"], Json("0.14.0"))
   guard root["summary"] is Json::Object(summary) else {
     fail("audit summary must be an object")
   }

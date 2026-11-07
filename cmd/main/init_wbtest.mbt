@@ -37,3 +37,11 @@ test "generated init config is valid and uses default policies" {
     assert_true(severity == @lib.default_severity(rule))
   }
 }
+
+///|
+test "baseline generation requires a repository-containing destination" {
+  assert_true(
+    baseline_scope_error(["examples/safe"], "examples/baseline.json") is None,
+  )
+  assert_true(baseline_scope_error(["."], "work/baseline.json") is Some(_))
+}
