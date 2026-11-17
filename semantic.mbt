@@ -59,8 +59,7 @@ fn semantic_test_name(raw_line : String) -> String? {
 fn semantic_function_name(code_line : String) -> String? {
   let rest = match
     semantic_strip_prefixes(code_line.trim_start().to_owned(), [
-      "pub async fn ", "priv async fn ", "async fn ", "pub fn ", "priv fn ", "extern fn ",
-      "fn ",
+      "pub async fn ", "priv async fn ", "async fn ", "pub fn ", "priv fn ", "fn ",
     ]) {
     Some(rest) => rest
     None => return None
@@ -110,7 +109,8 @@ fn parse_semantic_model(
       line_index = line_index + 1 {
     let raw_line = raw_lines[line_index].to_owned()
     let code_line = code_lines[line_index].to_owned()
-    if semantic_test_name(raw_line) is Some(name) {
+    if semantic_test_name(code_line) is Some(_) &&
+      semantic_test_name(raw_line) is Some(name) {
       if semantic_body_end(code_lines, line_index) is Some(end_line) {
         tests.push({ name, start_line: line_index, end_line, })
       }

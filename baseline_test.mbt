@@ -40,7 +40,7 @@ test "baseline groups duplicate fingerprints and round-trips JSON" {
     baseline_finding(9, @moonhermetic.Network, "fetch(\"fixture\")"),
   ]
   let baseline = @moonhermetic.create_baseline(
-    findings, ".", "2026-11-07", "0.15.0",
+    findings, ".", "2026-11-07", "0.15.1",
   )
   assert_eq(baseline.entries.length(), 1)
   assert_eq(baseline.entries[0].count, 2)
@@ -59,7 +59,7 @@ test "baseline filters accepted findings and exposes stale entries" {
     [known],
     ".",
     "2026-11-07",
-    "0.15.0",
+    "0.15.1",
   )
   let moved = baseline_finding(77, @moonhermetic.Network, "fetch(\"fixture\")")
   let new_finding = baseline_finding(80, @moonhermetic.Sleep, "sleep(10)")
@@ -85,7 +85,7 @@ test "baseline count preserves a new duplicate occurrence" {
     [known],
     ".",
     "2026-11-07",
-    "0.15.0",
+    "0.15.1",
   )
   let result = @moonhermetic.filter_with_baseline(
     [known, baseline_finding(8, @moonhermetic.Network, "fetch(\"fixture\")")],
@@ -102,7 +102,7 @@ test "baseline parser rejects unknown fields and unsafe paths" {
     #|{
     #|  "schema": "moonhermetic/baseline-v1",
     #|  "createdOn": "2026-11-07",
-    #|  "createdWith": "0.15.0",
+    #|  "createdWith": "0.15.1",
     #|  "findings": [],
     #|  "extra": true
     #|}
@@ -118,7 +118,7 @@ test "baseline parser rejects unknown fields and unsafe paths" {
     #|{
     #|  "schema": "moonhermetic/baseline-v1",
     #|  "createdOn": "2026-11-07",
-    #|  "createdWith": "0.15.0",
+    #|  "createdWith": "0.15.1",
     #|  "findings": [{
     #|    "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     #|    "ruleId": "HERM-NET",

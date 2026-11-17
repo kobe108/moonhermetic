@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.1
+
+- Ignore `test` declarations inside block comments so documentation examples
+  cannot create phantom call-graph roots.
+- Exclude `extern fn` declarations from the local function graph and add
+  regression tests for both parser boundaries.
+
 ## 0.15.0
 
 - Add file-local MoonBit test semantics: parse test blocks and function bodies,

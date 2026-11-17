@@ -115,6 +115,42 @@ test "semantic call graph ignores calls in strings and comments" {
 }
 
 ///|
+test "semantic parser ignores test declarations inside block comments" {
+  let source =
+    #|fn documented_helper() {
+    #|  @env.get_env_var("TOKEN")
+    #|}
+    #|
+    #|/*
+    #|test "documented example" {
+    #|  documented_helper()
+    #|}
+    #|*/
+    #|
+    #|test "actual test" {
+    #|  assert_eq(1, 1)
+    #|}
+  let findings = @moonhermetic.scan_source_semantically("demo_test.mbt", source)
+  assert_eq(findings.length(), 0)
+}
+
+///|
+test "semantic parser does not treat extern fn as a local body" {
+  let source =
+    #|extern fn platform_clock() -> Int
+    #|
+    #|fn read_clock() -> Int {
+    #|  @env.now()
+    #|}
+    #|
+    #|test "clock" {
+    #|  ignore(platform_clock())
+    #|}
+  let findings = @moonhermetic.scan_source_semantically("demo_test.mbt", source)
+  assert_eq(findings.length(), 0)
+}
+
+///|
 test "semantic scanning preserves scoped suppression behavior" {
   let source =
     #|fn load_fixture() -> String {

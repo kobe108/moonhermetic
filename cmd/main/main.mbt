@@ -144,7 +144,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.15.0")
+        println("moonhermetic 0.15.1")
         @sys.exit(0)
       }
       "--rules" => {
@@ -427,7 +427,7 @@ fn main {
       @sys.exit(2)
     }
     let root = @path.Path(path).dirname().to_string()
-    let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.0")
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.1")
     write_baseline_file(path, @lib.render_baseline_json(baseline))
     println(
       "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +

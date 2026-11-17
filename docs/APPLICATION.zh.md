@@ -39,8 +39,8 @@
 - 当前范围明确为文件内静态调用图，不处理方法、动态分派和跨文件调用；可回退整文件扫描。
 
 ## 八、完成度与验证
-- 已发布 `v0.15.0`，包含 Linux、Windows 和 macOS 原生二进制及 SHA-256。
-- 69 个 MoonBit 测试在 Native、Wasm-GC、JavaScript 三个目标通过。
+- 已发布 `v0.15.1`，包含 Linux、Windows 和 macOS 原生二进制及 SHA-256。
+- 71 个 MoonBit 测试在 Native、Wasm-GC、JavaScript 三个目标通过。
 - 精度基准覆盖 10 个公开仓库、531 个测试文件和 1178 条发现。
 - 提供语义示例、Action、Job Summary、PR 评论、Release 和 Mooncakes 包校验流程。
 

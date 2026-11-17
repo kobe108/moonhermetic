@@ -185,7 +185,7 @@ fn handle_init_args(args : Array[String]) -> Unit {
         }
       }
       let root = @path.Path(path).dirname().to_string()
-      let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.0")
+      let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.1")
       Some(
         (
           @lib.render_baseline_json(baseline),
