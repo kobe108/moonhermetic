@@ -4,6 +4,7 @@ priv struct InitOptions {
   config_path : String
   baseline_path : String?
   force : Bool
+  reachability : Bool
 }
 
 ///|
@@ -16,6 +17,7 @@ let init_usage_text =
   #|  --baseline <path>   Baseline destination (default: .moonhermetic-baseline.json)
   #|  --no-baseline       Only create configuration
   #|  --force             Overwrite existing generated files
+  #|  --no-reachability   Scan all code instead of test-reachable code
   #|  -h, --help          Show this help
 
 ///|
@@ -30,6 +32,7 @@ fn parse_init_options(args : Array[String]) -> InitOptions {
   let mut config_path = ".moonhermetic.json"
   let mut baseline_path : String? = Some(".moonhermetic-baseline.json")
   let mut force = false
+  let mut reachability = true
   let mut index = 2
   while index < args.length() {
     let arg = args[index]
@@ -54,6 +57,7 @@ fn parse_init_options(args : Array[String]) -> InitOptions {
       }
       "--no-baseline" => baseline_path = None
       "--force" => force = true
+      "--no-reachability" => reachability = false
       _ => {
         if arg.has_prefix("-") {
           init_error("unknown init option '\{arg}'")
@@ -77,6 +81,7 @@ fn parse_init_options(args : Array[String]) -> InitOptions {
     config_path,
     baseline_path,
     force,
+    reachability,
   }
 }
 
@@ -169,17 +174,18 @@ fn handle_init_args(args : Array[String]) -> Unit {
           }
         }
         for
-          finding in @lib.scan_source_with_options_and_date(
+          finding in scan_file_findings(
             file,
             source,
             @lib.default_scan_options(),
             scan_date,
+            options.reachability,
           ) {
           findings.push(finding)
         }
       }
       let root = @path.Path(path).dirname().to_string()
-      let baseline = @lib.create_baseline(findings, root, scan_date, "0.14.0")
+      let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.0")
       Some(
         (
           @lib.render_baseline_json(baseline),

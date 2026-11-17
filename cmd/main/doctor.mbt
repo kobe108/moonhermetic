@@ -45,6 +45,7 @@ priv struct DoctorOptions {
   baseline_disabled : Bool
   format : String
   strict : Bool
+  reachability : Bool
 }
 
 ///|
@@ -59,6 +60,7 @@ let doctor_usage_text =
   #|  --no-baseline       Ignore a baseline
   #|  --format <text|json>
   #|  --strict            Exit non-zero for warnings as well as errors
+  #|  --no-reachability   Scan all code instead of test-reachable code
   #|  -h, --help          Show this help
 
 ///|
@@ -80,6 +82,7 @@ fn parse_doctor_options(args : Array[String]) -> DoctorOptions {
   let mut baseline_disabled = false
   let mut format = "text"
   let mut strict = false
+  let mut reachability = true
   let mut index = 2
   while index < args.length() {
     let arg = args[index]
@@ -107,6 +110,7 @@ fn parse_doctor_options(args : Array[String]) -> DoctorOptions {
         index = index + 1
       }
       "--strict" => strict = true
+      "--no-reachability" => reachability = false
       _ => {
         if arg.has_prefix("-") {
           init_error("unknown doctor option '\{arg}'")
@@ -136,6 +140,7 @@ fn parse_doctor_options(args : Array[String]) -> DoctorOptions {
     baseline_disabled,
     format,
     strict,
+    reachability,
   }
 }
 
@@ -190,7 +195,7 @@ fn render_doctor_json(report : DoctorReport) -> String {
     "schema": Json::string("moonhermetic/doctor-v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.14.0"),
+      "version": Json::string("0.15.0"),
     }),
     "summary": Json::object({
       "passed": Json::number(doctor_status_count(report, Pass).to_double()),
@@ -348,7 +353,7 @@ fn handle_doctor_args(args : Array[String]) -> Unit {
   }
   let options = parse_doctor_options(args)
   let checks : Array[DoctorCheck] = [
-    doctor_check("tool", Pass, "MoonHermetic 0.14.0 is running.", None),
+    doctor_check("tool", Pass, "MoonHermetic 0.15.0 is running.", None),
   ]
   if inspect_kind(options.target) == 0 {
     checks.push(
@@ -415,11 +420,12 @@ fn handle_doctor_args(args : Array[String]) -> Unit {
       audits.push(audit)
     }
     for
-      finding in @lib.scan_source_with_options_and_date(
+      finding in scan_file_findings(
         file,
         source,
         config.options,
         scan_date,
+        options.reachability,
       ) {
       findings.push(finding)
     }

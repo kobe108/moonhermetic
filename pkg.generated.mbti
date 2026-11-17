@@ -60,6 +60,10 @@ pub fn rule_catalog_markdown() -> String
 
 pub fn scan_source(String, String) -> Array[Finding]
 
+pub fn scan_source_semantically(String, String) -> Array[Finding]
+
+pub fn scan_source_semantically_with_options_and_date(String, String, ScanOptions, String) -> Array[Finding]
+
 pub fn scan_source_with_options(String, String, ScanOptions) -> Array[Finding]
 
 pub fn scan_source_with_options_and_date(String, String, ScanOptions, String) -> Array[Finding]
@@ -113,6 +117,8 @@ pub(all) struct Finding {
   rule : RuleKind
   severity : Severity
   evidence : String
+  test_name : String?
+  call_path : Array[String]
 }
 pub fn Finding::to_text(Self) -> String
 

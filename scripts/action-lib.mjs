@@ -147,6 +147,13 @@ export function createActionPlan(
   if (failOnSuppression) {
     args.push("--fail-on-suppression");
   }
+  const reachabilityInput = input(env, "INPUT_REACHABILITY");
+  const reachability = reachabilityInput === ""
+    ? true
+    : parseBoolean(reachabilityInput, "reachability");
+  if (!reachability) {
+    args.push("--no-reachability");
+  }
 
   const summaryInput = input(env, "INPUT_SUMMARY");
   const summary = summaryInput === "" ? true : parseBoolean(summaryInput, "summary");

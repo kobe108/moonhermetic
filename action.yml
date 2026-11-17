@@ -23,6 +23,10 @@ inputs:
       Configuration path relative to the caller's workspace. The caller's
       .moonhermetic.json is discovered automatically when present.
     required: false
+  reachability:
+    description: Analyze only code reachable from MoonBit test blocks
+    required: false
+    default: "true"
   exclude:
     description: One or more path fragments to exclude, separated by newlines
     required: false
@@ -100,6 +104,7 @@ runs:
         INPUT_FORMAT: ${{ inputs.format }}
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_REACHABILITY: ${{ inputs.reachability }}
         INPUT_EXCLUDE: ${{ inputs.exclude }}
         INPUT_DIFF: ${{ inputs.diff }}
         INPUT_BASELINE: ${{ inputs.baseline }}

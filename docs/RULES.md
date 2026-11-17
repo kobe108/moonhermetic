@@ -9,6 +9,21 @@ Default severities can be changed in `.moonhermetic.json`. Setting a rule to
 `off` removes its findings entirely; changing it to `warning` or `error`
 changes only the reported severity.
 
+## Test reachability
+
+The CLI builds a file-local call graph from each `test` block to local `fn`
+bodies. Rule matching happens only after a function is proven reachable from a
+test. Findings expose the test name and call path, for example:
+
+```text
+request reads an ambient token -> prepare_request -> read_ambient_token
+```
+
+Functions not called from any test are ignored. Qualified calls, methods,
+dynamic dispatch, macros, generated code, and cross-file resolution are outside
+the current semantic scope. Use `--no-reachability` for legacy whole-file
+scanning during migration.
+
 ## HERM-CLOCK
 
 Matches current wall-clock or local-time reads. A fixed timestamp lets the test

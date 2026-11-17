@@ -47,6 +47,7 @@ history-based flake score.
 - [x] Add stable finding baselines for incremental project adoption.
 - [x] Add a one-command project initialization flow.
 - [x] Add a doctor command for project and CI readiness diagnostics.
+- [x] Add test-reachability call graphs and effect path tracing.
 
 ### Week 3: ecosystem validation
 

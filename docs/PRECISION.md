@@ -45,9 +45,14 @@ pwsh scripts/run-precision.ps1
 ```
 
 The script downloads each pinned tarball, extracts only `.mbt` files, runs
-MoonHermetic with `--no-config --fail-on never`, stores JSON reports under
+MoonHermetic with `--no-config --no-reachability --fail-on never`, stores JSON reports under
 `work/precision-benchmark/reports`, and compares every repository and rule
 count with [`benchmarks/precision-baseline.json`](../benchmarks/precision-baseline.json).
+
+`--no-reachability` keeps this historical corpus comparable to the rule-only
+baseline. Test-call-graph behavior is covered by deterministic unit tests and
+the semantic example; it is intentionally not mixed into the older line-based
+precision counts.
 
 Use `-WorkDir <path>` to choose a different scratch directory. Archives are
 cached by repository ID and short commit.

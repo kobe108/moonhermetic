@@ -20,6 +20,7 @@ let usage_text =
   #|      --baseline <path>              Ignore findings recorded in a baseline
   #|      --write-baseline <path>        Write the current findings as a baseline
   #|      --summary-file <path>          Also write a compact GitHub Markdown summary
+  #|      --no-reachability              Scan all code instead of test-reachable code
   #|      --exclude <text>                Skip paths or directory names containing text
   #|      --rules                         Print the rule catalog as Markdown
   #|  -h, --help                          Show this help
@@ -143,7 +144,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.14.0")
+        println("moonhermetic 0.15.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -169,6 +170,23 @@ fn current_utc_date() -> String {
   let seconds = (@env.now() / 1000UL).reinterpret_as_int64()
   let instant = @time.unix(seconds) catch { _ => return "9999-12-31" }
   "\{instant.year()}-\{two_digits(instant.month())}-\{two_digits(instant.day())}"
+}
+
+///|
+fn scan_file_findings(
+  path : String,
+  source : String,
+  options : @lib.ScanOptions,
+  today : String,
+  reachability : Bool,
+) -> Array[@lib.Finding] {
+  if reachability {
+    @lib.scan_source_semantically_with_options_and_date(
+      path, source, options, today,
+    )
+  } else {
+    @lib.scan_source_with_options_and_date(path, source, options, today)
+  }
 }
 
 ///|
@@ -235,6 +253,7 @@ fn main {
   let mut summary_path : String? = None
   let mut baseline_path : String? = None
   let mut write_baseline_path : String? = None
+  let mut reachability = true
   let mut index = 1
   while index < args.length() {
     let arg = args[index]
@@ -290,6 +309,7 @@ fn main {
         summary_path = Some(value)
         index = index + 1
       }
+      "--no-reachability" => reachability = false
       "--exclude" => {
         let value = require_value(args, index, arg)
         if value.is_empty() {
@@ -372,11 +392,12 @@ fn main {
       }
     } else {
       for
-        finding in @lib.scan_source_with_options_and_date(
+        finding in scan_file_findings(
           file,
           source,
           config.options,
           scan_date,
+          reachability,
         ) {
         findings.push(finding)
       }
@@ -406,7 +427,7 @@ fn main {
       @sys.exit(2)
     }
     let root = @path.Path(path).dirname().to_string()
-    let baseline = @lib.create_baseline(findings, root, scan_date, "0.14.0")
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.0")
     write_baseline_file(path, @lib.render_baseline_json(baseline))
     println(
       "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +

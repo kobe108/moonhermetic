@@ -157,7 +157,7 @@ try {
     }
 
     $sourceFiles = Expand-MoonBitSources -Archive $archive -Destination $source
-    & moon run cmd/main -- $source --no-config --format json --fail-on never |
+    & moon run cmd/main -- $source --no-config --no-reachability --format json --fail-on never |
       Out-File -Encoding utf8 $report
     if ($LASTEXITCODE -ne 0) {
       throw "MoonHermetic failed while scanning '$($repository.id)'."

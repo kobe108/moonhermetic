@@ -441,6 +441,8 @@ fn scan_source_internal(
               rule,
               severity,
               evidence: raw_line.trim().to_owned(),
+              test_name: None,
+              call_path: [],
             })
           }
         }

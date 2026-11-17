@@ -5,18 +5,20 @@ test "init defaults to config and baseline in the current directory" {
   assert_eq(options.config_path, ".moonhermetic.json")
   assert_eq(options.baseline_path, Some(".moonhermetic-baseline.json"))
   assert_true(!options.force)
+  assert_true(options.reachability)
 }
 
 ///|
 test "init accepts a target and destination overrides" {
   let options = parse_init_options([
     "moonhermetic", "init", "subproject", "--config", "config/moonhermetic.json",
-    "--baseline", "config/baseline.json", "--force",
+    "--baseline", "config/baseline.json", "--force", "--no-reachability",
   ])
   assert_eq(options.target, "subproject")
   assert_eq(options.config_path, "config/moonhermetic.json")
   assert_eq(options.baseline_path, Some("config/baseline.json"))
   assert_true(options.force)
+  assert_true(!options.reachability)
 }
 
 ///|

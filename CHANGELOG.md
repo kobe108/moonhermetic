@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.15.0
+
+- Add file-local MoonBit test semantics: parse test blocks and function bodies,
+  build a local call graph, and analyze only functions reachable from tests.
+- Attach the owning test name and concrete `test -> helper -> effect` call path
+  to each semantic finding and expose them in Text, JSON, Markdown, and SARIF.
+- Avoid reporting ambient effects in unused test-file helpers.
+- Keep `--no-reachability` for legacy whole-file scanning and precision
+  baseline compatibility.
+- Add a concrete environment-token fixture demonstrating reachable versus
+  unreachable helper behavior.
+
 ## 0.14.0
 
 - Add `moonhermetic doctor` diagnostics for test discovery, project config,

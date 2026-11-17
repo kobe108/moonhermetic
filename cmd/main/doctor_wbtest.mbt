@@ -8,19 +8,21 @@ test "doctor options default to text and non-strict mode" {
   assert_true(!options.baseline_disabled)
   assert_eq(options.format, "text")
   assert_true(!options.strict)
+  assert_true(options.reachability)
 }
 
 ///|
 test "doctor accepts json strict and disabled integrations" {
   let options = parse_doctor_options([
     "moonhermetic", "doctor", "src", "--no-config", "--no-baseline", "--format",
-    "json", "--strict",
+    "json", "--strict", "--no-reachability",
   ])
   assert_eq(options.target, "src")
   assert_true(options.config_disabled)
   assert_true(options.baseline_disabled)
   assert_eq(options.format, "json")
   assert_true(options.strict)
+  assert_true(!options.reachability)
 }
 
 ///|

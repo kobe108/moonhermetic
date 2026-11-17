@@ -10,7 +10,27 @@ fn finding_to_json(finding : Finding) -> Json {
     "message": Json::string(finding.rule.message()),
     "remediation": Json::string(finding.rule.remediation()),
     "evidence": Json::string(finding.evidence),
+    "testName": match finding.test_name {
+      Some(name) => Json::string(name)
+      None => Json::null()
+    },
+    "callPath": Json::array(finding.call_path.map(Json::string)),
   })
+}
+
+///|
+fn call_path_text(path : Array[String]) -> String {
+  if path.is_empty() {
+    return "-"
+  }
+  let out = StringBuilder()
+  for index, item in path {
+    if index > 0 {
+      out.write_string(" -> ")
+    }
+    out.write_string(item)
+  }
+  out.to_string()
 }
 
 ///|
@@ -24,6 +44,11 @@ pub fn render_text(report : ScanReport) -> String {
       "\{finding.rule.title()}\n",
     )
     out.write_string("  evidence: \{finding.evidence}\n")
+    if finding.test_name is Some(test_name) {
+      out.write_string(
+        "  test: \{test_name} (\{call_path_text(finding.call_path)})\n",
+      )
+    }
     out.write_string("  fix: \{finding.rule.remediation()}\n")
   }
   if report.findings.length() > 0 {
@@ -61,7 +86,7 @@ pub fn render_json(report : ScanReport) -> String {
     "schema": Json::string("moonhermetic/v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.14.0"),
+      "version": Json::string("0.15.0"),
     }),
     "summary": Json::object({
       "scannedFiles": Json::number(report.scanned_files.to_double()),
@@ -119,14 +144,15 @@ pub fn render_markdown(report : ScanReport) -> String {
     return out.to_string()
   }
   out.write_string(
-    "| Location | Severity | Rule | Evidence | Suggested fix |\n",
+    "| Location | Severity | Rule | Test trace | Evidence | Suggested fix |\n",
   )
-  out.write_string("|---|---|---|---|---|\n")
+  out.write_string("|---|---|---|---|---|---|\n")
   for finding in report.findings {
     out.write_string(
       "| `\{finding.path}:\{finding.line}:\{finding.column}` " +
       "| \{finding.severity.to_string()} " +
       "| `\{finding.rule.code()}` \{finding.rule.title()} " +
+      "| \{markdown_escape(call_path_text(finding.call_path))} " +
       "| `\{markdown_escape(finding.evidence)}` " +
       "| \{markdown_escape(finding.rule.remediation())} |\n",
     )
@@ -186,8 +212,8 @@ pub fn render_ci_summary(report : ScanReport) -> String {
   } else {
     20
   }
-  out.write_string("| Location | Severity | Rule | Evidence |\n")
-  out.write_string("|---|---|---|---|\n")
+  out.write_string("| Location | Severity | Rule | Test trace | Evidence |\n")
+  out.write_string("|---|---|---|---|---|\n")
   for index = 0; index < shown; index = index + 1 {
     let finding = report.findings[index]
     out.write_string(
@@ -195,6 +221,7 @@ pub fn render_ci_summary(report : ScanReport) -> String {
       "\{finding.line}:\{finding.column}` " +
       "| \{finding.severity.to_string()} " +
       "| `\{finding.rule.code()}` \{finding.rule.title()} " +
+      "| \{markdown_escape(call_path_text(finding.call_path))} " +
       "| `\{markdown_escape(summary_short(finding.evidence, 160))}` |\n",
     )
   }
@@ -232,6 +259,13 @@ fn sarif_result(finding : Finding) -> Json {
     "ruleId": Json::string(finding.rule.code()),
     "level": Json::string(finding.severity.to_string()),
     "message": Json::object({ "text": Json::string(finding.rule.message()) }),
+    "properties": Json::object({
+      "testName": match finding.test_name {
+        Some(name) => Json::string(name)
+        None => Json::null()
+      },
+      "callPath": Json::array(finding.call_path.map(Json::string)),
+    }),
     "locations": Json::array([
       Json::object({
         "physicalLocation": Json::object({
@@ -259,7 +293,7 @@ pub fn render_sarif(report : ScanReport) -> String {
         "tool": Json::object({
           "driver": Json::object({
             "name": Json::string("MoonHermetic"),
-            "version": Json::string("0.14.0"),
+            "version": Json::string("0.15.0"),
             "informationUri": Json::string(
               "https://github.com/kobe108/moonhermetic",
             ),

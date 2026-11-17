@@ -4,6 +4,10 @@ MoonHermetic is a static hermeticity auditor for MoonBit tests. It finds tests
 that silently depend on the machine, clock, network, filesystem, random state,
 or timing before those tests become flaky in CI.
 
+Its default analysis is test-oriented rather than file-wide: a MoonBit-aware
+call graph links named tests to local helpers and reports the effect path that
+makes a test depend on ambient host state.
+
 It is intentionally narrower than a general static-analysis framework and
 different from runtime flake classifiers: MoonHermetic does not rerun failed
 tests or infer a root cause from historical results. It makes likely
@@ -25,6 +29,8 @@ location and a concrete remediation before the test is executed.
 
 - Seven rules: wall clock, randomness, environment, network, subprocess,
   filesystem, and sleep/timing dependencies.
+- Test-reachability semantics that trace effects through local helper calls and
+  ignore unused test-file helpers.
 - Comment- and literal-aware scanning with precise file, line, and column
   locations.
 - Rule-specific inline suppression with owners, expiry dates, and
@@ -112,6 +118,7 @@ moonhermetic doctor [path] [options]
       --baseline <path>
       --write-baseline <path>
       --summary-file <path>
+      --no-reachability
       --exclude <text>
       --rules
   -h, --help
@@ -119,6 +126,20 @@ moonhermetic doctor [path] [options]
 ```
 
 Run `moonhermetic init --help` for initialization options.
+
+Semantic mode is the default. MoonHermetic parses `test` and local `fn` bodies,
+builds a file-local call graph, and reports only effects reachable from a named
+test. Findings include the concrete call path:
+
+```text
+test: request reads an ambient token
+path: request reads an ambient token -> prepare_request -> read_ambient_token
+```
+
+Use `--no-reachability` to scan every line in a test file with the legacy
+name-based behavior. See
+[`docs/SEMANTIC_ANALYSIS.md`](docs/SEMANTIC_ANALYSIS.md) for the concrete case,
+algorithm, and scope.
 
 Run project diagnostics with:
 
@@ -283,7 +304,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.14.0
+    uses: kobe108/moonhermetic@v0.15.0
     with:
       path: .
       format: sarif
@@ -310,7 +331,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.14.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.15.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
@@ -391,6 +412,7 @@ plan, [docs/RULES.md](docs/RULES.md) for rule semantics and false-positive
 guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/RELEASES.md](docs/RELEASES.md) for native binary publishing,
 [docs/BASELINE.md](docs/BASELINE.md) for incremental adoption,
+[docs/SEMANTIC_ANALYSIS.md](docs/SEMANTIC_ANALYSIS.md) for test reachability,
 [docs/DOCTOR.md](docs/DOCTOR.md) for setup diagnostics,
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese

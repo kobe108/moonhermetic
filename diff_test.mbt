@@ -45,6 +45,8 @@ test "filters findings to changed lines" {
       rule: @moonhermetic.Network,
       severity: @moonhermetic.Error,
       evidence: "fetch",
+      test_name: None,
+      call_path: [],
     },
     {
       path: "src/checkout_test.mbt",
@@ -53,6 +55,8 @@ test "filters findings to changed lines" {
       rule: @moonhermetic.Sleep,
       severity: @moonhermetic.Error,
       evidence: "sleep",
+      test_name: None,
+      call_path: [],
     },
   ]
   let filtered = @moonhermetic.filter_findings(findings, filter)

@@ -54,6 +54,8 @@ pub(all) struct Finding {
   rule : RuleKind
   severity : Severity
   evidence : String
+  test_name : String?
+  call_path : Array[String]
 }
 
 ///|

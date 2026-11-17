@@ -119,6 +119,12 @@ test("PR comments create a summary even when job summary output is disabled", ()
   );
 });
 
+test("reachability can be disabled for legacy whole-file scans", () => {
+  const result = plan({ INPUT_REACHABILITY: "false" });
+  assert.ok(result.args.includes("--no-reachability"));
+  assert.ok(!plan().args.includes("--no-reachability"));
+});
+
 test("boolean parser accepts common action input spellings", () => {
   for (const value of ["", "false", "0", "no", "FALSE"]) {
     assert.equal(parseBoolean(value, "flag"), false);

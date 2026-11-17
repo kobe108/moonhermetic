@@ -7,6 +7,8 @@ fn sample_finding(rule : @moonhermetic.RuleKind) -> @moonhermetic.Finding {
     rule,
     severity: @moonhermetic.default_severity(rule),
     evidence: "sleep(1)",
+    test_name: None,
+    call_path: [],
   }
 }
 
@@ -31,7 +33,7 @@ test "json report is valid and structured" {
   guard json is Object(root) else { fail("root must be an object") }
   assert_eq(root["schema"], Json("moonhermetic/v1"))
   guard root["tool"] is Object(tool) else { fail("tool must be an object") }
-  assert_eq(tool["version"], Json("0.14.0"))
+  assert_eq(tool["version"], Json("0.15.0"))
   guard root["findings"] is Array(findings) else {
     fail("findings must be an array")
   }
@@ -102,4 +104,22 @@ test "CI summary is compact and reports omitted findings" {
   assert_true(summary.contains("# MoonHermetic report"))
   assert_true(summary.contains("| 3 | 25 | 25 | 0 |"))
   assert_true(summary.contains("5 additional finding(s)"))
+}
+
+///|
+test "reports expose semantic test and call paths" {
+  let finding : @moonhermetic.Finding = {
+    ..sample_finding(@moonhermetic.Environment),
+    test_name: Some("billing reads token"),
+    call_path: ["billing reads token", "prepare_request", "read_token"],
+  }
+  let text = @moonhermetic.render_text(@moonhermetic.make_report(1, [finding]))
+  let json = @moonhermetic.render_json(@moonhermetic.make_report(1, [finding]))
+  assert_true(
+    text.contains(
+      "test: billing reads token (billing reads token -> prepare_request -> read_token)",
+    ),
+  )
+  assert_true(json.contains("\"testName\": \"billing reads token\""))
+  assert_true(json.contains("\"read_token\""))
 }
