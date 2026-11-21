@@ -53,6 +53,22 @@ jobs:
         run: |
           node -e 'const fs = require("node:fs"); const report = process.env.REPORT_PATH; if (!fs.existsSync(report) || !fs.readFileSync(report, "utf8").includes("0 finding(s)")) process.exit(1)'
 
+      - name: Run cross-file semantic scan
+        id: crossfile
+        uses: ./
+        with:
+          path: examples/semantic/cross_file
+          format: json
+          fail-on: never
+          output-file: ${{ runner.temp }}/moonhermetic-cross-file.json
+
+      - name: Verify cross-file call path
+        shell: bash
+        env:
+          REPORT_PATH: ${{ steps.crossfile.outputs.report-path }}
+        run: |
+          node -e 'const fs=require("node:fs"); const r=JSON.parse(fs.readFileSync(process.env.REPORT_PATH,"utf8")); const f=r.findings[0]; if (!f || !f.path.endsWith("request.mbt") || f.callPath.length !== 3) process.exit(1)'
+
   governance-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 20

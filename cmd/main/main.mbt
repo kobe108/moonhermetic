@@ -99,6 +99,7 @@ fn discover(
   excludes : Array[String],
   seen_directories : Array[String],
   depth : Int,
+  include_supporting_sources : Bool,
 ) -> Unit {
   if depth > 64 {
     return
@@ -123,11 +124,25 @@ fn discover(
       for entry in entries {
         if !is_builtin_excluded(entry) {
           let child = @path.Path(path).join(@path.Path(entry)).to_string()
-          discover(child, files, excludes, seen_directories, depth + 1)
+          discover(
+            child,
+            files,
+            excludes,
+            seen_directories,
+            depth + 1,
+            include_supporting_sources,
+          )
         }
       }
     }
-    2 => if is_test_file(path) && !files.contains(path) { files.push(path) }
+    2 =>
+      if (
+          is_test_file(path) ||
+          (include_supporting_sources && path.has_suffix(".mbt"))
+        ) &&
+        !files.contains(path) {
+        files.push(path)
+      }
     _ => {
       print_error("path does not exist or is not a file/directory: \{path}")
       @sys.exit(2)
@@ -144,7 +159,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.15.1")
+        println("moonhermetic 0.16.0")
         @sys.exit(0)
       }
       "--rules" => {
@@ -368,17 +383,26 @@ fn main {
     inputs.push(".")
   }
 
-  let files = []
+  let discovered_files = []
   let seen_directories = []
   for input in inputs {
-    discover(input, files, excludes, seen_directories, 0)
+    discover(
+      input,
+      discovered_files,
+      excludes,
+      seen_directories,
+      0,
+      reachability && !audit_suppressions,
+    )
   }
-  files.sort()
+  discovered_files.sort()
+  let files = discovered_files.filter(is_test_file)
 
   let findings = []
   let audits = []
   let scan_date = current_utc_date()
-  for file in files {
+  let sources : Array[(String, String)] = []
+  for file in discovered_files {
     let source = @fs.read_file_to_string(file) catch {
       @fs.IOError(message) => {
         print_error("cannot read file '\{file}': \{message}")
@@ -386,18 +410,39 @@ fn main {
         abort("unreachable after I/O error")
       }
     }
-    if audit_suppressions {
+    sources.push((file, source))
+  }
+  if audit_suppressions {
+    for pair in sources {
+      let file = pair.0
+      let source = pair.1
       for audit in @lib.audit_suppressions(file, source, scan_date) {
         audits.push(audit)
       }
-    } else {
+    }
+  } else if reachability {
+    for
+      finding in @lib.scan_sources_semantically_with_options_and_date(
+        sources,
+        config.options,
+        scan_date,
+      ) {
+      findings.push(finding)
+    }
+  } else {
+    for pair in sources {
+      let file = pair.0
+      let source = pair.1
+      if !is_test_file(file) {
+        continue
+      }
       for
         finding in scan_file_findings(
           file,
           source,
           config.options,
           scan_date,
-          reachability,
+          false,
         ) {
         findings.push(finding)
       }
@@ -427,7 +472,7 @@ fn main {
       @sys.exit(2)
     }
     let root = @path.Path(path).dirname().to_string()
-    let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.1")
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.0")
     write_baseline_file(path, @lib.render_baseline_json(baseline))
     println(
       "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +

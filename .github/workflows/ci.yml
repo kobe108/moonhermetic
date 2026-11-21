@@ -42,6 +42,13 @@ jobs:
         run: |
           moon run cmd/main -- . --exclude examples --format sarif --fail-on error | Out-File -Encoding utf8 moonhermetic.sarif
 
+      - name: Cross-file semantic contract
+        shell: bash
+        run: |
+          moon run cmd/main -- examples/semantic/cross_file \
+            --no-config --format json --fail-on never > cross-file.json
+          node -e 'const fs=require("node:fs"); const r=JSON.parse(fs.readFileSync("cross-file.json","utf8")); const f=r.findings[0]; if (!f || !f.path.endsWith("request.mbt") || f.callPath.join(" -> ") !== "cross-file request reads an ambient token -> prepare_request -> read_ambient_token") process.exit(1)'
+
       - name: Suppression governance
         run: moon run cmd/main -- . --exclude examples --fail-on-suppression
 

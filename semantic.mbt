@@ -12,6 +12,16 @@ priv struct SemanticModel {
 }
 
 ///|
+priv struct SemanticFile {
+  path : String
+  package_path : String
+  raw_lines : Array[String]
+  code_lines : Array[String]
+  tests : Array[SemanticUnit]
+  functions : Array[SemanticUnit]
+}
+
+///|
 fn semantic_identifier_start(value : Char) -> Bool {
   (value >= 'a' && value <= 'z') ||
   (value >= 'A' && value <= 'Z') ||
@@ -76,7 +86,7 @@ fn semantic_function_name(code_line : String) -> String? {
 }
 
 ///|
-fn semantic_body_end(code_lines : Array[StringView], start_line : Int) -> Int? {
+fn semantic_body_end(code_lines : Array[String], start_line : Int) -> Int? {
   let mut depth = 0
   let mut started = false
   for line_index = start_line
@@ -99,16 +109,16 @@ fn semantic_body_end(code_lines : Array[StringView], start_line : Int) -> Int? {
 
 ///|
 fn parse_semantic_model(
-  raw_lines : Array[StringView],
-  code_lines : Array[StringView],
+  raw_lines : Array[String],
+  code_lines : Array[String],
 ) -> SemanticModel {
   let tests : Array[SemanticUnit] = []
   let functions : Array[SemanticUnit] = []
   for line_index = 0
       line_index < code_lines.length()
       line_index = line_index + 1 {
-    let raw_line = raw_lines[line_index].to_owned()
-    let code_line = code_lines[line_index].to_owned()
+    let raw_line = raw_lines[line_index]
+    let code_line = code_lines[line_index]
     if semantic_test_name(code_line) is Some(_) &&
       semantic_test_name(raw_line) is Some(name) {
       if semantic_body_end(code_lines, line_index) is Some(end_line) {
@@ -127,14 +137,14 @@ fn parse_semantic_model(
 ///|
 fn semantic_calls_in_unit(
   unit : SemanticUnit,
-  code_lines : Array[StringView],
+  code_lines : Array[String],
   function_names : Array[String],
 ) -> Array[String] {
   let calls : Array[String] = []
   for line_index = unit.start_line
       line_index <= unit.end_line
       line_index = line_index + 1 {
-    let code_line = mask_declaration_name(code_lines[line_index].to_owned())
+    let code_line = mask_declaration_name(code_lines[line_index])
     let chars = code_line.to_array()
     let mut index = 0
     while index < chars.length() {
@@ -181,8 +191,8 @@ fn copy_call_path(path : Array[String]) -> Array[String] {
 fn semantic_findings_in_unit(
   path : String,
   unit : SemanticUnit,
-  raw_lines : Array[StringView],
-  code_lines : Array[StringView],
+  raw_lines : Array[String],
+  code_lines : Array[String],
   options : ScanOptions,
   today : String?,
   test_name : String,
@@ -192,13 +202,13 @@ fn semantic_findings_in_unit(
   for line_index = unit.start_line
       line_index <= unit.end_line
       line_index = line_index + 1 {
-    let raw_line = raw_lines[line_index].to_owned()
+    let raw_line = raw_lines[line_index]
     let previous_line = if line_index == 0 {
       ""
     } else {
-      raw_lines[line_index - 1].to_owned()
+      raw_lines[line_index - 1]
     }
-    let code_line = mask_declaration_name(code_lines[line_index].to_owned())
+    let code_line = mask_declaration_name(code_lines[line_index])
     for rule in rule_catalog() {
       if first_pattern(code_line, rule) is Some((_, column)) {
         if resolve_severity(rule, options) is Some(severity) &&
@@ -221,13 +231,90 @@ fn semantic_findings_in_unit(
 }
 
 ///|
+fn semantic_source_lines(source : String) -> Array[String] {
+  let lines : Array[String] = []
+  for line in source.split("\n") {
+    lines.push(line.to_owned())
+  }
+  lines
+}
+
+///|
+fn semantic_package(path : String) -> String {
+  let normalized = path.replace_all(old="\\", new="/")
+  let chars = normalized.to_array()
+  let mut last_slash : Int? = None
+  for index = 0; index < chars.length(); index = index + 1 {
+    if chars[index] == '/' {
+      last_slash = Some(index)
+    }
+  }
+  match last_slash {
+    Some(index) => normalized.exact_view(end=index).to_owned()
+    None => "."
+  }
+}
+
+///|
+fn semantic_file(path : String, source : String) -> SemanticFile {
+  let raw_lines = semantic_source_lines(source)
+  let code_lines = semantic_source_lines(mask_source(source))
+  let model = parse_semantic_model(raw_lines, code_lines)
+  {
+    path,
+    package_path: semantic_package(path),
+    raw_lines,
+    code_lines,
+    tests: model.tests,
+    functions: model.functions,
+  }
+}
+
+///|
+fn semantic_find_function(
+  models : Array[SemanticFile],
+  package_path : String,
+  name : String,
+) -> (Int, SemanticUnit)? {
+  for model_index = 0
+      model_index < models.length()
+      model_index = model_index + 1 {
+    if models[model_index].package_path == package_path {
+      for function in models[model_index].functions {
+        if function.name == name {
+          return Some((model_index, function))
+        }
+      }
+    }
+  }
+  None
+}
+
+///|
+fn semantic_function_names(
+  models : Array[SemanticFile],
+  package_path : String,
+) -> Array[String] {
+  let names : Array[String] = []
+  for model in models {
+    if model.package_path == package_path {
+      for function in model.functions {
+        if !names.contains(function.name) {
+          names.push(function.name)
+        }
+      }
+    }
+  }
+  names
+}
+
+///|
 fn semantic_trace_function(
-  path : String,
+  model_index : Int,
   function : SemanticUnit,
-  model : SemanticModel,
+  package_path : String,
+  models : Array[SemanticFile],
   function_names : Array[String],
-  raw_lines : Array[StringView],
-  code_lines : Array[StringView],
   options : ScanOptions,
   today : String?,
   test_name : String,
@@ -235,29 +322,125 @@ fn semantic_trace_function(
   visited : Array[String],
   findings : Array[Finding],
 ) -> Unit {
-  if visited.contains(function.name) {
+  let model = models[model_index]
+  let visit_key = model.path + "::" + function.name
+  if visited.contains(visit_key) {
     return
   }
-  visited.push(function.name)
+  visited.push(visit_key)
   for
     finding in semantic_findings_in_unit(
-      path, function, raw_lines, code_lines, options, today, test_name, call_path,
+      model.path,
+      function,
+      model.raw_lines,
+      model.code_lines,
+      options,
+      today,
+      test_name,
+      call_path,
     ) {
     findings.push(finding)
   }
   for
-    called_name in semantic_calls_in_unit(function, code_lines, function_names) {
-    for called in model.functions {
-      if called.name == called_name {
+    called_name in semantic_calls_in_unit(
+      function,
+      model.code_lines,
+      function_names,
+    ) {
+    match semantic_find_function(models, package_path, called_name) {
+      Some((called_model_index, called)) => {
         let next_path = copy_call_path(call_path)
         next_path.push(called.name)
         semantic_trace_function(
-          path, called, model, function_names, raw_lines, code_lines, options, today,
-          test_name, next_path, visited, findings,
+          called_model_index, called, package_path, models, function_names, options,
+          today, test_name, next_path, visited, findings,
         )
+      }
+      None => ()
+    }
+  }
+}
+
+///|
+fn semantic_scan_sources(
+  sources : Array[(String, String)],
+  options : ScanOptions,
+  today : String?,
+) -> Array[Finding] {
+  let models : Array[SemanticFile] = []
+  let seen_paths : Array[String] = []
+  for pair in sources {
+    let path = pair.0
+    let source = pair.1
+    if !seen_paths.contains(path) {
+      seen_paths.push(path)
+      models.push(semantic_file(path, source))
+    }
+  }
+  let findings : Array[Finding] = []
+  for model_index = 0
+      model_index < models.length()
+      model_index = model_index + 1 {
+    let model = models[model_index]
+    let function_names = semantic_function_names(models, model.package_path)
+    for test_unit in model.tests {
+      let root_path : Array[String] = [test_unit.name]
+      for
+        finding in semantic_findings_in_unit(
+          model.path,
+          test_unit,
+          model.raw_lines,
+          model.code_lines,
+          options,
+          today,
+          test_unit.name,
+          root_path,
+        ) {
+        findings.push(finding)
+      }
+      let visited : Array[String] = []
+      for
+        called_name in semantic_calls_in_unit(
+          test_unit,
+          model.code_lines,
+          function_names,
+        ) {
+        match semantic_find_function(models, model.package_path, called_name) {
+          Some((called_model_index, function)) => {
+            let call_path : Array[String] = [test_unit.name, function.name]
+            semantic_trace_function(
+              called_model_index,
+              function,
+              model.package_path,
+              models,
+              function_names,
+              options,
+              today,
+              test_unit.name,
+              call_path,
+              visited,
+              findings,
+            )
+          }
+          None => ()
+        }
       }
     }
   }
+  findings.sort_by((left, right) => {
+    let path_order = left.path.compare(right.path)
+    if path_order != 0 {
+      path_order
+    } else {
+      let line_order = left.line - right.line
+      if line_order != 0 {
+        line_order
+      } else {
+        left.column - right.column
+      }
+    }
+  })
+  findings
 }
 
 ///|
@@ -267,62 +450,7 @@ fn semantic_scan_source(
   options : ScanOptions,
   today : String?,
 ) -> Array[Finding] {
-  let masked = mask_source(source)
-  let raw_lines = source.split("\n").to_array()
-  let code_lines = masked.split("\n").to_array()
-  let model = parse_semantic_model(raw_lines, code_lines)
-  let function_names = model.functions.map(function => function.name)
-  let findings : Array[Finding] = []
-  for test_unit in model.tests {
-    let root_path : Array[String] = [test_unit.name]
-    for
-      finding in semantic_findings_in_unit(
-        path,
-        test_unit,
-        raw_lines,
-        code_lines,
-        options,
-        today,
-        test_unit.name,
-        root_path,
-      ) {
-      findings.push(finding)
-    }
-    let visited : Array[String] = []
-    for
-      called_name in semantic_calls_in_unit(
-        test_unit, code_lines, function_names,
-      ) {
-      for function in model.functions {
-        if function.name == called_name {
-          let call_path : Array[String] = [test_unit.name, function.name]
-          semantic_trace_function(
-            path,
-            function,
-            model,
-            function_names,
-            raw_lines,
-            code_lines,
-            options,
-            today,
-            test_unit.name,
-            call_path,
-            visited,
-            findings,
-          )
-        }
-      }
-    }
-  }
-  findings.sort_by((left, right) => {
-    let line_order = left.line - right.line
-    if line_order != 0 {
-      line_order
-    } else {
-      left.column - right.column
-    }
-  })
-  findings
+  semantic_scan_sources([(path, source)], options, today)
 }
 
 ///|
@@ -343,4 +471,22 @@ pub fn scan_source_semantically_with_options_and_date(
   today : String,
 ) -> Array[Finding] {
   semantic_scan_source(path, source, options, Some(today))
+}
+
+///|
+/// Scan a MoonBit package across files while tracing only test-reachable code.
+pub fn scan_sources_semantically(
+  sources : Array[(String, String)],
+) -> Array[Finding] {
+  semantic_scan_sources(sources, default_scan_options(), None)
+}
+
+///|
+/// Cross-file semantic scan with rule overrides and a UTC reference date.
+pub fn scan_sources_semantically_with_options_and_date(
+  sources : Array[(String, String)],
+  options : ScanOptions,
+  today : String,
+) -> Array[Finding] {
+  semantic_scan_sources(sources, options, Some(today))
 }

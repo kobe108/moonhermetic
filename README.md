@@ -29,8 +29,8 @@ location and a concrete remediation before the test is executed.
 
 - Seven rules: wall clock, randomness, environment, network, subprocess,
   filesystem, and sleep/timing dependencies.
-- Test-reachability semantics that trace effects through local helper calls and
-  ignore unused test-file helpers.
+- Test-reachability semantics that trace effects through helpers across files in
+  the same MoonBit package and ignore unreachable helpers.
 - Comment- and literal-aware scanning with precise file, line, and column
   locations.
 - Rule-specific inline suppression with owners, expiry dates, and
@@ -127,9 +127,9 @@ moonhermetic doctor [path] [options]
 
 Run `moonhermetic init --help` for initialization options.
 
-Semantic mode is the default. MoonHermetic parses `test` and local `fn` bodies,
-builds a file-local call graph, and reports only effects reachable from a named
-test. Findings include the concrete call path:
+Semantic mode is the default. MoonHermetic parses `test` and `fn` bodies,
+builds a package-local multi-file call graph, and reports only effects reachable
+from a named test. Findings include the concrete call path:
 
 ```text
 test: request reads an ambient token
@@ -304,7 +304,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.15.1
+    uses: kobe108/moonhermetic@v0.16.0
     with:
       path: .
       format: sarif
@@ -331,7 +331,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.15.1-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.16.0-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
@@ -415,6 +415,7 @@ guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/SEMANTIC_ANALYSIS.md](docs/SEMANTIC_ANALYSIS.md) for test reachability,
 [docs/DOCTOR.md](docs/DOCTOR.md) for setup diagnostics,
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
+[docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for the acceptance checklist, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.
 

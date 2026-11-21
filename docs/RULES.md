@@ -11,16 +11,17 @@ changes only the reported severity.
 
 ## Test reachability
 
-The CLI builds a file-local call graph from each `test` block to local `fn`
-bodies. Rule matching happens only after a function is proven reachable from a
-test. Findings expose the test name and call path, for example:
+The CLI builds a package-local call graph from each `test` block to `fn` bodies,
+including helpers in other `.mbt` files under the same package directory. Rule
+matching happens only after a function is proven reachable from a test.
+Findings expose the test name and call path, for example:
 
 ```text
 request reads an ambient token -> prepare_request -> read_ambient_token
 ```
 
-Functions not called from any test are ignored. Qualified calls, methods,
-dynamic dispatch, macros, generated code, and cross-file resolution are outside
+Functions not called from any test are ignored. Calls between package
+directories, methods, dynamic dispatch, macros, and generated code are outside
 the current semantic scope. Use `--no-reachability` for legacy whole-file
 scanning during migration.
 

@@ -98,6 +98,98 @@ test "semantic call graph terminates recursive call cycles" {
 }
 
 ///|
+test "semantic scan traces helpers across files in one package" {
+  let sources = [
+    (
+      "pkg/request_test.mbt",
+      (
+        #|test "cross-file request" {
+        #|  ignore(prepare_request())
+        #|}
+      ),
+    ),
+    (
+      "pkg/request.mbt",
+      (
+        #|fn prepare_request() -> String {
+        #|  read_token()
+        #|}
+        #|
+        #|fn read_token() -> String {
+        #|  @env.get_env_var("TOKEN")
+        #|}
+      ),
+    ),
+  ]
+  let findings = @moonhermetic.scan_sources_semantically(sources)
+  assert_eq(findings.length(), 1)
+  assert_eq(findings[0].path, "pkg/request.mbt")
+  assert_eq(findings[0].line, 6)
+  assert_eq(findings[0].test_name, Some("cross-file request"))
+  assert_eq(findings[0].call_path.length(), 3)
+  assert_eq(findings[0].call_path[1], "prepare_request")
+  assert_eq(findings[0].call_path[2], "read_token")
+}
+
+///|
+test "semantic cross-file resolution respects package boundaries" {
+  let sources = [
+    (
+      "first/demo_test.mbt",
+      (
+        #|test "local name only" {
+        #|  prepare_request()
+        #|}
+      ),
+    ),
+    (
+      "second/request.mbt",
+      (
+        #|fn prepare_request() -> String {
+        #|  @env.get_env_var("TOKEN")
+        #|}
+      ),
+    ),
+  ]
+  assert_eq(@moonhermetic.scan_sources_semantically(sources).length(), 0)
+}
+
+///|
+test "semantic cross-file call graph terminates package cycles" {
+  let sources = [
+    (
+      "pkg/case_test.mbt",
+      (
+        #|test "cross-file cycle" {
+        #|  first()
+        #|}
+      ),
+    ),
+    (
+      "pkg/first.mbt",
+      (
+        #|fn first() -> Unit {
+        #|  second()
+        #|}
+      ),
+    ),
+    (
+      "pkg/second.mbt",
+      (
+        #|fn second() -> Unit {
+        #|  first()
+        #|  @env.get_env_var("TOKEN")
+        #|}
+      ),
+    ),
+  ]
+  let findings = @moonhermetic.scan_sources_semantically(sources)
+  assert_eq(findings.length(), 1)
+  assert_eq(findings[0].path, "pkg/second.mbt")
+  assert_eq(findings[0].call_path.length(), 3)
+}
+
+///|
 test "semantic call graph ignores calls in strings and comments" {
   let source =
     #|fn unused_helper() {

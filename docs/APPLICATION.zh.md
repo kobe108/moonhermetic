@@ -16,7 +16,7 @@
 - 现有运行时 flake 工具通常要等失败发生；仅按 API 名称搜索又无法区分测试可达代码与未使用 helper。
 
 ## 四、解决方案
-- 解析 `test` 和本地 `fn` 的括号体，构建文件内调用图，只分析从命名测试可达的代码。
+- 解析 `test` 和同包 `fn` 的括号体，构建跨文件调用图，只分析从命名测试可达的代码。
 - 掩码注释、字符串、嵌套块注释和快照后提取调用边，降低文档与示例代码造成的误报。
 - 对每个可达边界输出 `test -> helper -> effect` 路径，并通过基线、diff 和 CI 报告支持团队协作。
 
@@ -28,7 +28,7 @@
 - `--diff` 只报告 PR 修改行；Text、JSON、Markdown 和 SARIF 同时携带测试名与调用链。
 
 ## 六、技术创新
-- 以测试声明为根、局部函数为节点构建调用图，带环检测并忽略未使用 helper。
+- 以测试声明为根、同包函数为节点构建跨文件调用图，带环检测并忽略未使用 helper。
 - 边界规则作为叶节点识别，最终结果由测试可达性、作用域和边界语义共同决定。
 - SHA-256 基线指纹忽略行号移动与格式空白，但保留字符串内容和重复次数。
 
@@ -36,11 +36,11 @@
 - 不比较 `.mbti` 公共接口，不生成 SBOM，也不根据历史失败率猜测 flaky 测试。
 - `mizchi/flaker` 侧重运行时 flake 计算；MoonHermetic 侧重测试调用链中的宿主边界。
 - 可达案例输出 `test -> prepare_request -> read_ambient_token`；未被测试调用的网络 helper 不报告。
-- 当前范围明确为文件内静态调用图，不处理方法、动态分派和跨文件调用；可回退整文件扫描。
+- 当前范围明确为同一 MoonBit package 内的静态调用图，不跨 package、不处理方法或动态分派；可回退整文件扫描。
 
 ## 八、完成度与验证
-- 已准备 `v0.15.1` 发布，流水线覆盖 Linux、Windows 和 macOS 原生二进制及 SHA-256。
-- 71 个 MoonBit 测试在 Native、Wasm-GC、JavaScript 三个目标通过。
+- 已准备 `v0.16.0` 发布，流水线覆盖 Linux、Windows 和 macOS 原生二进制及 SHA-256。
+- 74 个 MoonBit 测试在 Native、Wasm、Wasm-GC、JavaScript 四个目标通过。
 - 精度基准覆盖 10 个公开仓库、531 个测试文件和 1178 条发现。
 - 提供语义示例、Action、Job Summary、PR 评论、Release 和 Mooncakes 包校验流程。
 

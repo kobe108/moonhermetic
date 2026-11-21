@@ -86,7 +86,7 @@ pub fn render_json(report : ScanReport) -> String {
     "schema": Json::string("moonhermetic/v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.15.1"),
+      "version": Json::string("0.16.0"),
     }),
     "summary": Json::object({
       "scannedFiles": Json::number(report.scanned_files.to_double()),
@@ -293,7 +293,7 @@ pub fn render_sarif(report : ScanReport) -> String {
         "tool": Json::object({
           "driver": Json::object({
             "name": Json::string("MoonHermetic"),
-            "version": Json::string("0.15.1"),
+            "version": Json::string("0.16.0"),
             "informationUri": Json::string(
               "https://github.com/kobe108/moonhermetic",
             ),

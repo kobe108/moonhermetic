@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.16.0
+
+- Extend test-reachability analysis from one file to every `.mbt` source file in
+  the same MoonBit package, without crossing package directories.
+- Trace `test -> helper -> another file -> effect` chains and keep each finding
+  attached to its owning test and full call path.
+- Apply the same package-aware graph to `scan`, `doctor`, and generated
+  baselines, while preserving `--no-reachability` for legacy whole-file scans.
+- Add cross-file fixtures, package-boundary tests, and cycle regression tests.
+
 ## 0.15.1
 
 - Ignore `test` declarations inside block comments so documentation examples

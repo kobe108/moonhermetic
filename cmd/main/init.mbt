@@ -162,10 +162,18 @@ fn handle_init_args(args : Array[String]) -> Unit {
     Some(path) => {
       let files = []
       let seen_directories = []
-      discover(options.target, files, [], seen_directories, 0)
+      discover(
+        options.target,
+        files,
+        [],
+        seen_directories,
+        0,
+        options.reachability,
+      )
       files.sort()
       let findings = []
       let scan_date = current_utc_date()
+      let sources : Array[(String, String)] = []
       for file in files {
         let source = @fs.read_file_to_string(file) catch {
           @fs.IOError(message) => {
@@ -173,19 +181,35 @@ fn handle_init_args(args : Array[String]) -> Unit {
             abort("unreachable after I/O error")
           }
         }
+        sources.push((file, source))
+      }
+      if options.reachability {
         for
-          finding in scan_file_findings(
-            file,
-            source,
+          finding in @lib.scan_sources_semantically_with_options_and_date(
+            sources,
             @lib.default_scan_options(),
             scan_date,
-            options.reachability,
           ) {
           findings.push(finding)
         }
+      } else {
+        for pair in sources {
+          let file = pair.0
+          let source = pair.1
+          for
+            finding in scan_file_findings(
+              file,
+              source,
+              @lib.default_scan_options(),
+              scan_date,
+              false,
+            ) {
+            findings.push(finding)
+          }
+        }
       }
       let root = @path.Path(path).dirname().to_string()
-      let baseline = @lib.create_baseline(findings, root, scan_date, "0.15.1")
+      let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.0")
       Some(
         (
           @lib.render_baseline_json(baseline),

@@ -33,7 +33,7 @@ test "json report is valid and structured" {
   guard json is Object(root) else { fail("root must be an object") }
   assert_eq(root["schema"], Json("moonhermetic/v1"))
   guard root["tool"] is Object(tool) else { fail("tool must be an object") }
-  assert_eq(tool["version"], Json("0.15.1"))
+  assert_eq(tool["version"], Json("0.16.0"))
   guard root["findings"] is Array(findings) else {
     fail("findings must be an array")
   }

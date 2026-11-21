@@ -21,10 +21,13 @@ const required = [
   "cmd/main/init.mbt",
   "cmd/main/main.mbt",
   "cmd/main/moon.pkg",
+  "docs/ACCEPTANCE.md",
   "docs/BASELINE.md",
   "docs/DOCTOR.md",
   "docs/SEMANTIC_ANALYSIS.md",
   "examples/safe-baseline.json",
+  "examples/semantic/cross_file/request.mbt",
+  "examples/semantic/cross_file/request_test.mbt",
   "examples/semantic/environment_test.mbt",
   "semantic.mbt",
   "moon.mod",
@@ -55,15 +58,15 @@ function zipWithCentralDirectory(entries) {
 
 test("parses module metadata and derives the package filename", () => {
   const manifest = parseModuleManifest(
-    'name = "kobe108/moonhermetic"\nversion = "0.15.1"\n',
+    'name = "kobe108/moonhermetic"\nversion = "0.16.0"\n',
   );
   assert.deepEqual(manifest, {
     name: "kobe108/moonhermetic",
-    version: "0.15.1",
+    version: "0.16.0",
   });
   assert.equal(
     packageArchiveName(manifest.name, manifest.version),
-    "kobe108-moonhermetic-0.15.1.zip",
+    "kobe108-moonhermetic-0.16.0.zip",
   );
 });
 
