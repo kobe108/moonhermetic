@@ -39,7 +39,7 @@
 - 当前范围明确为同一 MoonBit package 内的静态调用图，不跨 package、不处理方法或动态分派；可回退全源码名称扫描。
 
 ## 八、完成度与验证
-- 已准备 `v0.16.1` 发布，流水线覆盖 Linux、Windows 和 macOS 原生二进制及 SHA-256。
+- 已发布 `v0.16.1`，包含 Linux、Windows 和 macOS 原生二进制及 SHA-256。
 - 74 个 MoonBit 测试在 Native、Wasm、Wasm-GC、JavaScript 四个目标通过。
 - 精度基准覆盖 10 个公开仓库、531 个测试文件和 1178 条发现。
 - 提供语义示例、Action、Job Summary、PR 评论、Release 和 Mooncakes 包校验流程。
