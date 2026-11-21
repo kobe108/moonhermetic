@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.16.1
+
+- Make `--no-reachability` consistently scan every discovered `.mbt` source
+  file, matching the CLI help and preserving an explicit legacy comparison.
+- Add a one-command acceptance verifier covering four MoonBit targets,
+  cross-file behavior, Node/Action tests, package validation, and application
+  line count.
+- Add public API documentation and a reproducible Chinese demo script.
+- Extend released Action smoke tests to verify cross-file call paths on Linux,
+  Windows, and macOS.
+
 ## 0.16.0
 
 - Extend test-reachability analysis from one file to every `.mbt` source file in

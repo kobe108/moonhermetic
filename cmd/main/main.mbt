@@ -159,7 +159,7 @@ fn handle_info_args(args : Array[String]) -> Unit {
         @sys.exit(0)
       }
       "-V" | "--version" => {
-        println("moonhermetic 0.16.0")
+        println("moonhermetic 0.16.1")
         @sys.exit(0)
       }
       "--rules" => {
@@ -392,7 +392,7 @@ fn main {
       excludes,
       seen_directories,
       0,
-      reachability && !audit_suppressions,
+      !audit_suppressions,
     )
   }
   discovered_files.sort()
@@ -433,9 +433,6 @@ fn main {
     for pair in sources {
       let file = pair.0
       let source = pair.1
-      if !is_test_file(file) {
-        continue
-      }
       for
         finding in scan_file_findings(
           file,
@@ -472,7 +469,7 @@ fn main {
       @sys.exit(2)
     }
     let root = @path.Path(path).dirname().to_string()
-    let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.0")
+    let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.1")
     write_baseline_file(path, @lib.render_baseline_json(baseline))
     println(
       "Wrote \{baseline.entries.length()} baseline fingerprint(s) for " +

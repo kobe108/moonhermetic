@@ -4,6 +4,15 @@ This checklist maps the hackathon acceptance criteria to reproducible evidence.
 It is intentionally narrower than "detects every flaky test": MoonHermetic
 reports reviewable ambient boundaries, not confirmed defects.
 
+Run the complete local contract with:
+
+```powershell
+pwsh scripts/verify-acceptance.ps1
+```
+
+The script checks all four MoonBit targets, cross-file and legacy behavior,
+Node/Action tests, package contents, and the 70-line application.
+
 ## 1. Compiler and test contract
 
 ```bash

@@ -79,6 +79,7 @@ directory. It deliberately ignores calls between package directories, methods,
 qualified module calls, dynamic dispatch, macros, and generated code. API
 boundary detection remains rule-based and is not a full MoonBit type checker.
 
-These limitations are explicit: `--no-reachability` provides whole-file
-analysis for migration and precision-corpus compatibility, while semantic mode
-provides the default test-oriented result.
+These limitations are explicit: `--no-reachability` provides line-based
+analysis across every discovered `.mbt` source file for migration and
+precision-corpus compatibility, while semantic mode provides the default
+test-oriented result.

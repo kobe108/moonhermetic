@@ -22,8 +22,8 @@ request reads an ambient token -> prepare_request -> read_ambient_token
 
 Functions not called from any test are ignored. Calls between package
 directories, methods, dynamic dispatch, macros, and generated code are outside
-the current semantic scope. Use `--no-reachability` for legacy whole-file
-scanning during migration.
+the current semantic scope. Use `--no-reachability` for legacy scanning across
+all discovered `.mbt` source lines during migration.
 
 ## HERM-CLOCK
 

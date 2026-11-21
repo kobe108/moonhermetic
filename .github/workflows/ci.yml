@@ -32,10 +32,10 @@ jobs:
           moon update
 
       - name: Check
-        run: moon check
+        run: moon check --target all --deny-warn
 
       - name: Test
-        run: moon test
+        run: moon test --target all --deny-warn
 
       - name: Hermeticity audit
         shell: pwsh
@@ -58,3 +58,21 @@ jobs:
         with:
           name: moonhermetic-${{ matrix.os }}
           path: moonhermetic.sarif
+
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up MoonBit
+        uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update dependency index
+        run: moon update
+
+      - name: Run acceptance script
+        run: pwsh scripts/verify-acceptance.ps1

@@ -136,8 +136,8 @@ test: request reads an ambient token
 path: request reads an ambient token -> prepare_request -> read_ambient_token
 ```
 
-Use `--no-reachability` to scan every line in a test file with the legacy
-name-based behavior. See
+Use `--no-reachability` to scan every discovered `.mbt` source line with the
+legacy name-based behavior. See
 [`docs/SEMANTIC_ANALYSIS.md`](docs/SEMANTIC_ANALYSIS.md) for the concrete case,
 algorithm, and scope.
 
@@ -304,7 +304,7 @@ steps:
 
   - name: MoonHermetic
     id: hermetic
-    uses: kobe108/moonhermetic@v0.16.0
+    uses: kobe108/moonhermetic@v0.16.1
     with:
       path: .
       format: sarif
@@ -331,7 +331,7 @@ moon run cmd/main -- . --summary-file moonhermetic-summary.md
 Direct native binaries and their checksums are available from
 [GitHub Releases](https://github.com/kobe108/moonhermetic/releases). Release
 asset names include the version, platform, and architecture, for example
-`moonhermetic-v0.16.0-linux-x86_64`. Each release also includes a validated
+`moonhermetic-v0.16.1-linux-x86_64`. Each release also includes a validated
 Mooncakes ZIP and checksum.
 
 The equivalent manual workflow is:
@@ -416,6 +416,8 @@ guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/DOCTOR.md](docs/DOCTOR.md) for setup diagnostics,
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for the acceptance checklist, and
+[docs/API.md](docs/API.md) for the public API overview,
+[docs/DEMO.zh.md](docs/DEMO.zh.md) for the Chinese demo script, and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.
 

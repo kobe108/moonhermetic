@@ -195,7 +195,7 @@ fn render_doctor_json(report : DoctorReport) -> String {
     "schema": Json::string("moonhermetic/doctor-v1"),
     "tool": Json::object({
       "name": Json::string("MoonHermetic"),
-      "version": Json::string("0.16.0"),
+      "version": Json::string("0.16.1"),
     }),
     "summary": Json::object({
       "passed": Json::number(doctor_status_count(report, Pass).to_double()),
@@ -353,7 +353,7 @@ fn handle_doctor_args(args : Array[String]) -> Unit {
   }
   let options = parse_doctor_options(args)
   let checks : Array[DoctorCheck] = [
-    doctor_check("tool", Pass, "MoonHermetic 0.16.0 is running.", None),
+    doctor_check("tool", Pass, "MoonHermetic 0.16.1 is running.", None),
   ]
   if inspect_kind(options.target) == 0 {
     checks.push(
@@ -383,7 +383,7 @@ fn handle_doctor_args(args : Array[String]) -> Unit {
     config.excludes,
     seen_directories,
     0,
-    options.reachability,
+    true,
   )
   discovered_files.sort()
   let files = discovered_files.filter(is_test_file)
@@ -445,9 +445,6 @@ fn handle_doctor_args(args : Array[String]) -> Unit {
     for pair in sources {
       let file = pair.0
       let source = pair.1
-      if !is_test_file(file) {
-        continue
-      }
       for
         finding in scan_file_findings(
           file,

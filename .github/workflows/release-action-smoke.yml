@@ -21,7 +21,7 @@ jobs:
 
       - name: Run released action
         id: moonhermetic
-        uses: kobe108/moonhermetic@v0.16.0
+        uses: kobe108/moonhermetic@v0.16.1
         with:
           path: examples/safe
           format: text
@@ -36,3 +36,21 @@ jobs:
         run: |
           test "$EXECUTION_MODE" = "binary"
           node -e 'const fs = require("node:fs"); const report = process.env.REPORT_PATH; if (!fs.existsSync(report) || !fs.readFileSync(report, "utf8").includes("0 finding(s)")) process.exit(1)'
+
+      - name: Run released cross-file scan
+        id: crossfile
+        uses: kobe108/moonhermetic@v0.16.1
+        with:
+          path: examples/semantic/cross_file
+          format: json
+          fail-on: never
+          output-file: ${{ runner.temp }}/moonhermetic-release-cross-file.json
+
+      - name: Verify released cross-file contract
+        shell: bash
+        env:
+          EXECUTION_MODE: ${{ steps.crossfile.outputs.execution-mode }}
+          REPORT_PATH: ${{ steps.crossfile.outputs.report-path }}
+        run: |
+          test "$EXECUTION_MODE" = "binary"
+          node -e 'const fs=require("node:fs"); const r=JSON.parse(fs.readFileSync(process.env.REPORT_PATH,"utf8")); const f=r.findings[0]; const expected="cross-file request reads an ambient token -> prepare_request -> read_ambient_token"; if (!f || f.callPath.join(" -> ")!==expected) process.exit(1)'

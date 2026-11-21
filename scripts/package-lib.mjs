@@ -9,7 +9,9 @@ const REQUIRED_ENTRIES = [
   "cmd/main/main.mbt",
   "cmd/main/moon.pkg",
   "docs/ACCEPTANCE.md",
+  "docs/API.md",
   "docs/BASELINE.md",
+  "docs/DEMO.zh.md",
   "docs/DOCTOR.md",
   "docs/SEMANTIC_ANALYSIS.md",
   "examples/safe-baseline.json",
@@ -21,6 +23,8 @@ const REQUIRED_ENTRIES = [
   "pkg.generated.mbti",
   "report.mbt",
   "semantic.mbt",
+  "scripts/verify-acceptance.ps1",
+  "scripts/verify-semantic-contract.mjs",
   "suppressions.mbt",
   "types.mbt",
 ];

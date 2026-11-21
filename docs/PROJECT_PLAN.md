@@ -65,7 +65,8 @@ history-based flake score.
 - [x] Publish a reusable GitHub Action.
 - [x] Add Mooncakes package validation and a guarded publication workflow.
 - [ ] Publish the library to Mooncakes.
-- [ ] Complete API docs, changelog, and demo recording.
+- [x] Complete API docs, changelog, and a reproducible demo script.
+- [ ] Record the narrated demo using `docs/DEMO.zh.md`.
 
 ## Acceptance criteria
 

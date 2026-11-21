@@ -1,6 +1,6 @@
 name = "kobe108/moonhermetic"
 
-version = "0.16.0"
+version = "0.16.1"
 
 readme = "README.md"
 

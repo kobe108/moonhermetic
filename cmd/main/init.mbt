@@ -162,14 +162,7 @@ fn handle_init_args(args : Array[String]) -> Unit {
     Some(path) => {
       let files = []
       let seen_directories = []
-      discover(
-        options.target,
-        files,
-        [],
-        seen_directories,
-        0,
-        options.reachability,
-      )
+      discover(options.target, files, [], seen_directories, 0, true)
       files.sort()
       let findings = []
       let scan_date = current_utc_date()
@@ -209,7 +202,7 @@ fn handle_init_args(args : Array[String]) -> Unit {
         }
       }
       let root = @path.Path(path).dirname().to_string()
-      let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.0")
+      let baseline = @lib.create_baseline(findings, root, scan_date, "0.16.1")
       Some(
         (
           @lib.render_baseline_json(baseline),
