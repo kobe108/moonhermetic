@@ -74,6 +74,8 @@ Published Mooncakes releases can be added without cloning the repository:
 moon add kobe108/moonhermetic
 ```
 
+The current registry release is `kobe108/moonhermetic@0.16.1`.
+
 Initialize an existing project with the default configuration and baseline:
 
 ```bash

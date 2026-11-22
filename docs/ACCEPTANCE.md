@@ -109,7 +109,7 @@ false-positive boundaries.
 | CI integration | Reusable Action, SARIF, managed summary, cross-file contract job |
 | Explicit limits | Package-local `fn` calls only; no methods, dynamic dispatch, or macros |
 
-Mooncakes upload still requires project-owner credentials and is not claimed by
-automated checks. A deterministic 150-second captioned demo is included; if the
-submission portal specifically requires a human voiceover, the included script
-can be read over the same scenes.
+Mooncakes publication is verified with `moon search kobe108 --json`, which
+reports `kobe108/moonhermetic@0.16.1`. A deterministic 150-second captioned
+demo is included; if the submission portal specifically requires a human
+voiceover, the included script can be read over the same scenes.

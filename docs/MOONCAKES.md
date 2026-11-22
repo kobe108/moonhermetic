@@ -6,6 +6,8 @@ MoonHermetic is a MoonBit library and CLI module:
 kobe108/moonhermetic
 ```
 
+Current registry publication: `kobe108/moonhermetic@0.16.1`.
+
 Consumers can use the analyzer from MoonBit source:
 
 ```moonbit

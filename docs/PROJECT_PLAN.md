@@ -65,7 +65,7 @@ history-based flake score.
 - [x] Add release binaries for Windows, Linux, and macOS.
 - [x] Publish a reusable GitHub Action.
 - [x] Add Mooncakes package validation and a guarded publication workflow.
-- [ ] Publish the library to Mooncakes.
+- [x] Publish `kobe108/moonhermetic@0.16.1` to Mooncakes.
 - [x] Complete API docs, changelog, and a reproducible demo script.
 - [x] Generate a deterministic 150-second captioned demo and document the
   reproducible build/recording flow in `docs/DEMO.zh.md`.
