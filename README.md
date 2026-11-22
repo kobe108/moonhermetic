@@ -417,7 +417,9 @@ guidance, [docs/PRECISION.md](docs/PRECISION.md) for the pinned corpus, and
 [docs/MOONCAKES.md](docs/MOONCAKES.md) for package publication, and
 [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for the acceptance checklist, and
 [docs/API.md](docs/API.md) for the public API overview,
-[docs/DEMO.zh.md](docs/DEMO.zh.md) for the Chinese demo script, and
+[docs/DEMO.zh.md](docs/DEMO.zh.md) for the Chinese demo video and script,
+[docs/REVIEWED_CASES.md](docs/REVIEWED_CASES.md) for reviewed rule boundaries,
+and
 [docs/HACKATHON_PITCH.zh.md](docs/HACKATHON_PITCH.zh.md) for the Chinese
 proposal and demo script.
 

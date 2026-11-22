@@ -1,4 +1,24 @@
-# MoonHermetic 验收演示脚本
+# MoonHermetic 验收演示
+
+仓库已生成一份 150 秒的带字幕演示视频：
+
+```text
+dist/moonhermetic-demo.avi
+```
+
+该文件、封面、SHA-256 和完整提交包也已上传到
+[v0.16.1 Release](https://github.com/kobe108/moonhermetic/releases/tag/v0.16.1)。
+
+视频为 1280×720、2 fps 的确定性画面，不依赖麦克风或人工录屏。提交前可直接播放
+`dist/moonhermetic-demo.avi`，也可以按照下面的讲解稿亲自复述。
+
+重新生成：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/render-demo.ps1
+node scripts/mux-mjpeg-avi.mjs
+Get-FileHash dist/moonhermetic-demo.avi -Algorithm SHA256
+```
 
 建议录制 3–5 分钟。全程使用仓库根目录，并在开始前运行一次：
 

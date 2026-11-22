@@ -83,9 +83,13 @@ try {
     }
   }
 
+  Invoke-AcceptanceStep "Reviewed false-positive boundaries" {
+    node scripts/render-reviewed-cases.mjs
+  }
+
   if (-not $SkipPackage) {
     Invoke-AcceptanceStep "Mooncakes package validation" {
-      moon package --list *> $null
+      moon package --list | Out-Null
       if ($LASTEXITCODE -ne 0) {
         throw "moon package --list failed"
       }

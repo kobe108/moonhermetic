@@ -88,6 +88,16 @@ The package must include the cross-file fixture, semantic implementation, docs,
 Action metadata, and no build or credential directories. Commit and tag identity
 must remain `kobe108 <3360944005@qq.com>`.
 
+## 7. Reviewed rule boundaries
+
+```bash
+node scripts/render-reviewed-cases.mjs
+```
+
+This verifies that the generated [reviewed case report](REVIEWED_CASES.md)
+matches the pinned positive and negative decisions, including all reviewed
+false-positive boundaries.
+
 ## Acceptance matrix
 
 | Criterion | Evidence |
@@ -99,5 +109,7 @@ must remain `kobe108 <3360944005@qq.com>`.
 | CI integration | Reusable Action, SARIF, managed summary, cross-file contract job |
 | Explicit limits | Package-local `fn` calls only; no methods, dynamic dispatch, or macros |
 
-Mooncakes upload and a narrated demo recording still require project-owner
-credentials and a final walkthrough; they are not claimed by automated checks.
+Mooncakes upload still requires project-owner credentials and is not claimed by
+automated checks. A deterministic 150-second captioned demo is included; if the
+submission portal specifically requires a human voiceover, the included script
+can be read over the same scenes.

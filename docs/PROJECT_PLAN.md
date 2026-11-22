@@ -54,7 +54,8 @@ history-based flake score.
 
 - [x] Add diff-aware filtering for pull requests.
 - [x] Run against at least ten public MoonBit repositories.
-- [ ] Review every false positive and document the boundary.
+- [x] Review every case in the deterministic reviewed sample and document the
+  positive and negative boundaries in `docs/REVIEWED_CASES.md`.
 - [x] Add reviewed positive and negative cases from public projects.
 - [x] Add deterministic stratified sampling and a reviewed precision sample.
 - [x] Establish a pinned regression baseline across the initial corpus.
@@ -66,7 +67,8 @@ history-based flake score.
 - [x] Add Mooncakes package validation and a guarded publication workflow.
 - [ ] Publish the library to Mooncakes.
 - [x] Complete API docs, changelog, and a reproducible demo script.
-- [ ] Record the narrated demo using `docs/DEMO.zh.md`.
+- [x] Generate a deterministic 150-second captioned demo and document the
+  reproducible build/recording flow in `docs/DEMO.zh.md`.
 
 ## Acceptance criteria
 
